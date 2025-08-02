@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mammoth.js Word Viewer</title>
+</head>
+<body>
+    <h1>Preview Word Document with Mammoth.js</h1>
+    <input type="file" id="upload-docx" accept=".docx">
+    <div id="output" style="border: 1px solid #ccc; padding: 10px; margin-top: 20px;"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script>
+        document.getElementById('upload-docx').addEventListener('change', function(event) {
+            const reader = new FileReader();
+            const file = event.target.files[0];
+
+            reader.onload = function(event) {
+                const arrayBuffer = reader.result;
+
+                mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                    .then(function(result) {
+                        document.getElementById('output').innerHTML = result.value;
+                    })
+                    .catch(function(err) {
+                        console.error('Error:', err);
+                        document.getElementById('output').innerHTML = '<p style="color: red;">Error loading document</p>';
+                    });
+            };
+
+            if (file) {
+                reader.readAsArrayBuffer(file);
+            }
+        });
+    </script>
+</body>
+</html>

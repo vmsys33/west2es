@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset Frontend Debug</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-form { max-width: 500px; margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="email"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .debug-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Password Reset Frontend Debug Test</h1>
+    
+    <div class="debug-info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Enter the faculty email: <strong>Yvon123@deped.gov.ph</strong></li>
+            <li>Select "Admin" as user type</li>
+            <li>Click "Test Reset Request"</li>
+            <li>Check the console for any errors</li>
+            <li>You should see an error SweetAlert</li>
+        </ol>
+    </div>
+
+    <div class="test-form">
+        <h3>Password Reset Form Test</h3>
+        <div class="form-group">
+            <label for="testEmail">Email Address:</label>
+            <input type="email" id="testEmail" value="Yvon123@deped.gov.ph" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label for="testUserType">User Type:</label>
+            <select id="testUserType">
+                <option value="admin">Admin</option>
+                <option value="faculty">Faculty</option>
+            </select>
+        </div>
+        <button onclick="testPasswordReset()">Test Reset Request</button>
+    </div>
+
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <div id="debugOutput"></div>
+    </div>
+
+    <script>
+        function testPasswordReset() {
+            const email = document.getElementById('testEmail').value.trim();
+            const userType = document.getElementById('testUserType').value;
+            const debugOutput = document.getElementById('debugOutput');
+            
+            debugOutput.innerHTML = '<p><strong>Testing with:</strong> Email: ' + email + ', User Type: ' + userType + '</p>';
+            
+            // Show loading state
+            debugOutput.innerHTML += '<p><strong>Status:</strong> Sending request...</p>';
+            
+            // Send AJAX request
+            fetch('functions/forget_password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'email=' + encodeURIComponent(email) + '&request_reset=1&user_type=' + encodeURIComponent(userType)
+            })
+            .then(response => {
+                debugOutput.innerHTML += '<p><strong>Response Status:</strong> ' + response.status + ' ' + response.statusText + '</p>';
+                return response.text();
+            })
+            .then(data => {
+                debugOutput.innerHTML += '<p><strong>Response Data:</strong></p>';
+                debugOutput.innerHTML += '<pre style="background: #fff; padding: 10px; border: 1px solid #ddd; overflow-x: auto;">' + 
+                    data.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+                
+                // Try to execute the response as JavaScript
+                try {
+                    // Extract script content from the response
+                    const scriptMatch = data.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+                    if (scriptMatch) {
+                        const scriptContent = scriptMatch[1];
+                        debugOutput.innerHTML += '<p><strong>Executing Script:</strong> ' + scriptContent.substring(0, 100) + '...</p>';
+                        eval(scriptContent);
+                    } else {
+                        debugOutput.innerHTML += '<p><strong>Error:</strong> No script found in response</p>';
+                    }
+                } catch (error) {
+                    debugOutput.innerHTML += '<p><strong>Script Execution Error:</strong> ' + error.message + '</p>';
+                }
+            })
+            .catch(error => {
+                debugOutput.innerHTML += '<p><strong>Fetch Error:</strong> ' + error.message + '</p>';
+                Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+            });
+        }
+
+        // Test SweetAlert directly
+        function testSweetAlert() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Test Error',
+                text: 'This is a test error message.',
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
+            });
+        }
+    </script>
+
+    <div class="test-form">
+        <h3>SweetAlert Test</h3>
+        <button onclick="testSweetAlert()">Test SweetAlert</button>
+    </div>
+</body>
+</html> 

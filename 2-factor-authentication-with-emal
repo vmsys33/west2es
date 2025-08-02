@@ -1,0 +1,320 @@
+<?php
+// Database connection
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$dbname = 'user_database';
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Step 1: Request Password Reset
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_reset'])) {
+    $email = $conn->real_escape_string($_POST['email']);
+
+    // Check if email exists
+    $result = $conn->query("SELECT * FROM user_data WHERE email = '$email'");
+
+    if ($result->num_rows > 0) {
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        // Save token to database
+        $conn->query("UPDATE user_data SET reset_token = '$token' WHERE email = '$email'");
+
+        // Send email
+        $resetLink = "http://yourdomain.com/reset_password.php?token=$token";
+        $subject = "Password Reset Request";
+        $message = "Click the link below to reset your password:\n$resetLink";
+        $headers = "From: no-reply@yourdomain.com\r\n";
+
+        if (mail($email, $subject, $message, $headers)) {
+            echo "Password reset link sent to your email.";
+        } else {
+            echo "Failed to send email. Please try again.";
+        }
+    } else {
+        echo "Email not found.";
+    }
+}
+
+// Step 2: Reset Password
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
+    $token = $conn->real_escape_string($_POST['token']);
+    $newPassword = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+
+    // Verify token
+    $result = $conn->query("SELECT * FROM user_data WHERE reset_token = '$token'");
+
+    if ($result->num_rows > 0) {
+        // Update password
+        $conn->query("UPDATE user_data SET password = '$newPassword', reset_token = NULL WHERE reset_token = '$token'");
+
+        echo "Password reset successful.";
+    } else {
+        echo "Invalid or expired token.";
+    }
+}
+?>
+
+<!-- Request Password Reset Modal -->
+<div class="modal fade" id="requestResetModal" tabindex="-1" aria-labelledby="requestResetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="requestResetModalLabel">Request Password Reset</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="requestResetForm" action="" method="POST" novalidate>
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="yourname@deped.gov.ph" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid DepEd email address.
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" name="request_reset">Send Reset Link</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="resetPasswordForm" action="" method="POST" novalidate>
+                    <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['token'] ?? ''); ?>">
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label fw-semibold">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" placeholder="••••••••" required>
+                        <div class="invalid-feedback">
+                            Please enter your new password.
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" name="reset_password">Reset Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+Step 1: Request Password Reset
+This step allows the user to request a password reset by entering their email address.
+
+Form Submission:
+
+The user fills out a form with their email address.
+Form submission triggers a POST request.
+php
+Copy code
+<!-- HTML Form for Requesting Password Reset -->
+<form method="POST" action="">
+    <label for="email">Enter your email:</label>
+    <input type="email" id="email" name="email" required>
+    <button type="submit" name="request_reset">Send Reset Link</button>
+</form>
+Server Processing:
+
+Verify if the provided email exists in the database.
+If it exists, generate a unique reset token (using random_bytes).
+Save the token in the database alongside the user's record.
+Send an email to the user containing the reset link (e.g., http://yourdomain.com/reset_password.php?token=generated_token).
+Step 2: Sending the Reset Link
+When the email address is verified, an email with the reset token is sent to the user.
+
+Generate a Reset Token:
+
+Use PHP’s random_bytes to create a secure token.
+Example: bin2hex(random_bytes(32));
+Save the Token in the Database:
+
+Update the reset_token field for the user in the database:
+sql
+Copy code
+UPDATE user_data SET reset_token = 'generated_token' WHERE email = 'user_email';
+Send an Email:
+
+Use PHP’s mail() function or a third-party library like PHPMailer.
+Include a reset link in the email:
+arduino
+Copy code
+http://yourdomain.com/reset_password.php?token=generated_token
+Step 3: Verify the Token
+When the user clicks the reset link in the email, they are redirected to a form to enter a new password.
+
+Token Validation:
+
+Extract the token from the URL ($_GET['token']).
+Verify the token exists in the database.
+If the token is valid, allow the user to reset their password.
+Token Expiry:
+
+Optionally, add a timestamp column to your database (e.g., reset_token_expiry) to ensure the token is valid only for a specific time (e.g., 1 hour).
+Step 4: Reset Password
+Once the token is verified, allow the user to enter a new password.
+
+Form Submission:
+
+User submits a new password using a form.
+Include the token as a hidden field to ensure the system knows which token to validate.
+php
+Copy code
+<!-- HTML Form for Resetting Password -->
+<form method="POST" action="">
+    <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['token'] ?? ''); ?>">
+    <label for="new_password">Enter your new password:</label>
+    <input type="password" id="new_password" name="new_password" required>
+    <button type="submit" name="reset_password">Reset Password</button>
+</form>
+Update the Password:
+
+Verify the token again (to ensure it's valid and unused).
+Hash the new password using password_hash() for security.
+Save the hashed password to the database.
+Invalidate the token by setting reset_token = NULL.
+Example SQL query:
+
+sql
+Copy code
+UPDATE user_data SET password = 'hashed_password', reset_token = NULL WHERE reset_token = 'provided_token';
+Step 5: Confirm Success
+Once the password is updated, display a success message:
+csharp
+Copy code
+Your password has been reset successfully. You can now log in with your new password.
+Security Measures
+Token Expiry:
+
+Add an expiry timestamp to tokens and validate it during reset.
+Example: Add a column reset_token_expiry in the user_data table and check it during token verification:
+sql
+Copy code
+SELECT * FROM user_data WHERE reset_token = 'token' AND reset_token_expiry > NOW();
+Secure Password Storage:
+
+Always hash passwords using password_hash().
+HTTPS:
+
+Ensure your website uses HTTPS to protect sensitive data during transmission.
+Limit Requests:
+
+Add rate-limiting or CAPTCHA to the "Request Password Reset" form to prevent abuse.
+Final Flow
+User requests a password reset by providing their email.
+The system generates a token, saves it in the database, and emails the reset link.
+The user clicks the link, and the token is verified.
+The user sets a new password, which is securely stored in the database.
+If you'd like to dive deeper into any part, let me know!
+
+
+
+
+
+
+You said:
+can you make the password reset form and reset password form modal same with my uploaded login form?
+
+ChatGPT said:
+ChatGPT
+Forget Password 2fa
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+<?php
+// Database connection
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$dbname = 'user_database';
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Step 1: Request Password Reset
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_reset'])) {
+    $email = $conn->real_escape_string($_POST['email']);
+
+    // Check if email exists
+    $result = $conn->query("SELECT * FROM user_data WHERE email = '$email'");
+
+    if ($result->num_rows > 0) {
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        // Save token to database
+        $conn->query("UPDATE user_data SET reset_token = '$token' WHERE email = '$email'");
+
+        // Send email
+        $resetLink = "http://yourdomain.com/reset_password.php?token=$token";
+        $subject = "Password Reset Request";
+        $message = "Click the link below to reset your password:\n$resetLink";
+        $headers = "From: no-reply@yourdomain.com\r\n";
+
+        if (mail($email, $subject, $message, $headers)) {
+            echo "Password reset link sent to your email.";
+        } else {
+            echo "Failed to send email. Please try again.";
+        }
+
+
+
+
+
+

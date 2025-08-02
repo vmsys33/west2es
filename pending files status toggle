@@ -1,0 +1,224 @@
+Sure! Below is the updated version of your code integrating the database connection, the DataTable functionality, and SweetAlert to handle the file status toggling. I'll also adjust the `PHP` part to use the database to dynamically populate the `pending` files in the DataTable.
+
+### 1. **Database Connection and Fetching Data**
+
+I'll integrate the provided database connection and use it to fetch files with a `pending` status.
+
+### 2. **PHP Script for Fetching Pending Files**
+
+In this approach, the `pending` files are fetched directly from the database and displayed in the table. The row actions (approve, delete, etc.) will be handled with `SweetAlert`.
+
+Here's the updated version of your code:
+
+### `db_connection.php`
+```php
+<?php
+$host = 'localhost'; // Change to your host
+$db = 'west2es_db';  // Change to your database name
+$user = 'root';      // Change to your database username
+$pass = '';          // Change to your database password
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die('Connection failed: ' . $e->getMessage());
+}
+?>
+```
+
+### `fetch_status.php` - Fetch Pending Files from DB
+```php
+<?php
+include 'db_connection.php';
+
+// SQL query to fetch pending files from all _versions tables
+$query = "
+    SELECT 'admin_files_versions' AS table_name, id, filename, status, datetime, file_size, user_id FROM admin_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 'aeld_files_versions', id, filename, status, datetime, file_size, user_id FROM aeld_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 'cild_files_versions', id, filename, status, datetime, file_size, user_id FROM cild_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 'lulr_files_versions', id, filename, status, datetime, file_size, user_id FROM lulr_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 'RP_proposal_files_versions', id, filename, status, datetime, file_size, user_id FROM RP_proposal_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 'RP_completed_berf_files_versions', id, filename, status, datetime, file_size, user_id FROM RP_completed_berf_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 't_lr_files_versions', id, filename, status, datetime, file_size, user_id FROM t_lr_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 't_pp_files_versions', id, filename, status, datetime, file_size, user_id FROM t_pp_files_versions WHERE status = 'pending'
+    UNION
+    SELECT 't_rs_files_versions', id, filename, status, datetime, file_size, user_id FROM t_rs_files_versions WHERE status = 'pending'
+";
+
+$stmt = $pdo->query($query);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Return results as JSON for DataTable
+echo json_encode(['data' => $rows]);
+?>
+```
+
+### 3. **HTML and DataTable Integration**
+
+Here’s how to integrate the DataTable into your page, using the `fetch_status.php` for the data source, and handling the status toggle with SweetAlert.
+
+### `pending_files.php`
+```php
+<?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: ../index.php');
+    exit;
+}
+?>
+
+<?php include '../includes/header.php'; ?>
+<?php include '../includes/top-navbar.php'; ?>
+<?php include '../includes/sidebar.php'; ?>
+
+<div class="col-md-9 main-content">
+    <h3 class="mb-3">Pending Files</h3>
+    <div class="table-responsive">
+        <table id="pendingFilesTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Time and Date</th>
+                    <th>View</th>
+                    <th>Size</th>
+                    <th>Uploader</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated by DataTable -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php include '../includes/footer.php'; ?>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#pendingFilesTable').DataTable({
+        "ajax": {
+            url: 'fetch_status.php', // PHP script to fetch pending file data
+            dataSrc: 'data'          // Data source in the JSON response
+        },
+        "columns": [
+            { "data": "filename" },
+            { "data": "datetime" },
+            { "data": null, "render": function(data, type, row) {
+                return `
+                    <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></button>
+                `;
+            }},
+            { "data": "file_size" },
+            { "data": "user_id", "render": function(data, type, row) {
+                return 'User ' + data; // Modify if you need the actual username
+            }},
+            {
+                "data": null,
+                "render": function(data, type, row) {
+                    // Create approve or pending button
+                    return `
+                        <button class="btn btn-success btn-sm toggle-status" data-id="${row.id}" data-table="${row.table_name}" data-status="${row.status}">
+                            <i class="fas fa-check"></i> ${row.status === 'pending' ? 'Approve' : 'Pending'}
+                        </button>
+                    `;
+                }
+            }
+        ]
+    });
+
+    // Handle status toggle with SweetAlert
+    $(document).on('click', '.toggle-status', function() {
+        var fileId = $(this).data('id');
+        var tableName = $(this).data('table');
+        var currentStatus = $(this).data('status');
+        var newStatus = currentStatus === 'pending' ? 'approve' : 'pending';
+
+        // SweetAlert confirmation dialog
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to mark this file as ${newStatus}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, change it!',
+            cancelButtonText: 'No, keep it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send AJAX request to update status
+                $.ajax({
+                    url: 'update_status.php',
+                    method: 'POST',
+                    data: {
+                        id: fileId,
+                        table: tableName,
+                        status: newStatus
+                    },
+                    success: function(response) {
+                        // Reload DataTable after status update
+                        $('#pendingFilesTable').DataTable().ajax.reload();
+                        Swal.fire(
+                            'Updated!',
+                            `File status has been updated to ${newStatus}.`,
+                            'success'
+                        );
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+```
+
+### 4. **PHP Script to Update Status (`update_status.php`)**
+
+```php
+<?php
+include 'db_connection.php';
+
+// Get POST data
+$id = $_POST['id'];
+$table = $_POST['table'];
+$status = $_POST['status'];
+
+// Update status in the specified table
+$sql = "UPDATE `$table` SET `status` = :status WHERE `id` = :id";
+$stmt = $pdo->prepare($sql);
+$stmt->bindParam(':status', $status);
+$stmt->bindParam(':id', $id);
+$stmt->execute();
+
+echo "Status updated successfully!";
+?>
+```
+
+### Explanation:
+
+1. **Database Connection**: The `db_connection.php` handles the database connection using PDO.
+2. **Fetch Pending Files**: The `fetch_status.php` file fetches all pending files from the `_versions` tables and returns them in a JSON format for the DataTable.
+3. **DataTable**: The DataTable is initialized in `pending_files.php`, pulling data from `fetch_status.php`. It shows the file information and includes action buttons for each row.
+4. **SweetAlert and AJAX**: When you click the "Approve/Pending" button, SweetAlert will confirm the action, and then an AJAX request will update the file's status.
+5. **Status Update**: The `update_status.php` script updates the file's status in the corresponding table.
+
+This should give you the complete system to manage and approve/reject files based on their status in your file management system.

@@ -1,0 +1,303 @@
+/* Make the search box more compact */
+.search-box {
+  position: relative;
+  width: auto; /* Allow it to shrink to fit content */
+  max-width: 350px; /* Limit the maximum width */
+  display: flex;
+}
+
+.search-box input {
+  width: 100%; /* Input takes all available width */
+  max-width: 300px; /* Limit the width of the input field */
+  padding-left: 30px; /* Add space for the magnifying glass */
+}
+
+.search-box button {
+  width: 40px; /* Make the button smaller */
+  padding: 0;
+  margin-left: 5px;
+}
+
+.search-box input::placeholder {
+  padding-left: 30px; /* Align placeholder text with the magnifying glass */
+}
+
+.search-box input:focus {
+  padding-left: 30px; /* Ensure input text remains aligned with the icon */
+}
+
+/* Styling for the search icon inside the input */
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d; /* Color for the icon */
+  font-size: 16px; /* Adjust icon size */
+}
+
+.search-box input {
+  padding-left: 30px; /* Ensure the input text does not overlap with the icon */
+}
+
+/* Styling for search suggestions */
+#searchSuggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#searchSuggestions .list-group-item.active {
+  background-color: #f1f1f1; /* Highlight color for selected suggestion */
+  color: #000; /* Change text color when highlighted */
+}
+
+    /* Make the search form visible on mobile without the d-none class */
+@media (max-width: 768px) {
+  .search-box {
+    display: flex; /* Ensure the search box remains visible on mobile */
+    width: 100%;
+  }
+
+  .search-box input {
+    width: 80%; /* Adjust width as needed */
+  }
+
+  .search-box button {
+    width: 20%; /* Button takes up remaining space */
+  }
+
+  .btn-light.d-md-none {
+    display: none; /* Hide the search button in mobile */
+  }
+}
+
+
+
+
+    
+
+
+     
+     @media (max-width: 768px) {
+      .blue-header-text {
+        font-size: 14px;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -250px;
+        width: 250px;
+        height: 100vh;
+        background-color: #337ab7;
+        z-index: 1030;
+        transition: left 0.3s ease-in-out;
+        overflow-y: auto;
+      }
+      .sidebar.show {
+        left: 0;
+      }
+    }
+
+    .sidebar ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .sidebar li {
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+    }
+
+    .sidebar li:hover {
+      background-color: #2060be;
+    }
+
+    .has-submenu > a {
+      position: relative;
+    }
+
+    .has-submenu > a .fa-chevron-right {
+      position: absolute;
+      right: 20px;
+      top: 33%;
+      transform: translateY(-50%);
+      transition: transform 0.2s ease;
+      will-change: transform;
+    }
+
+    .has-submenu.show > a .fa-chevron-right {
+      transform: translateY(-50%) rotate(90deg);
+    }
+
+    .submenu {
+      display: none;
+      padding-left: 20px;
+      transition: none;
+    }
+
+    .submenu-item {
+      border-bottom: none;
+    }
+
+    .has-submenu.show .submenu {
+      display: block;
+    }
+
+    #sidebarToggle {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      #sidebarToggle {
+        display: block;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1031;
+      }
+    }
+
+    .nav-link.active {
+      background-color: #ffc107;
+      border-radius: 5px;
+      font-weight: bold;
+      color: black !important;
+    }
+
+    
+    .main-content {
+      padding: 20px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th, .table td {
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+    }
+
+    @media (max-width: 768px) {
+      .table th, .table td {
+        padding: 5px;
+        font-size: 14px;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+    }
+
+
+    @media (max-width: 768px) {
+  .has-submenu > a .fa-chevron-right {
+    right: 10px; /* Adjust this value to move the icon further right */
+  }
+}
+
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .main-content {
+    flex: 1;
+  }
+
+  footer {
+    background-color: #337ab7;
+    color: white;
+  }
+
+   
+    .info-box {
+      background-color: white;
+      border: 1px solid #dee2e6;
+      /* Light gray border */
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      /* Subtle shadow */
+      text-align: center;
+      /* Center text within boxes */
+    }
+
+
+    .info-box .info-label {
+      font-weight: bold;
+      color: #343a40;
+      /* Dark gray color for labels */
+      display: block;
+      /* Make labels occupy full width */
+      margin-bottom: 5px;
+    }
+
+    .info-box .info-value {
+      font-size: 24px;
+      color: #28a745;
+      /* Green color for values */
+    }
+
+    @media (max-width: 768px) {
+      .info-box {
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .info-box i {
+        font-size: 20px;
+      }
+
+      .info-box .info-value {
+        font-size: 20px;
+      }
+
+    }
+
+
+.info-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Make the height of the box equal */
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    min-height: 150px; /* Ensure each box has at least this height */
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.info-value a {
+    font-size: 20px;
+    color: #000; /* Ensures black color */
+    font-weight: bold;
+}
+
+.info-box:hover {
+    transform: scale(1.05); /* Optional: add hover effect for better interactivity */
+}
+

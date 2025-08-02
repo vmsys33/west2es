@@ -1,0 +1,819 @@
+<?php
+require_once '../db_connection.php';
+require_once '../notification_helper.php';
+header('Content-Type: application/json');
+
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Validate inputs
+        if (empty($_POST['fileName']) || empty($_FILES['fileInput'])) {
+            echo json_encode(['status' => 'error', 'message' => 'All fields are required.']);
+            exit;
+        }
+
+        $fileName = filter_var($_POST['fileName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+        
+        $userId = $_SESSION['user_id']; // Assuming user_id is stored in the session
+        $file = $_FILES['fileInput'];
+
+
+        // Remove the file extension using pathinfo
+        $fileInfo = pathinfo($file['name']);
+        $fileNameWithoutExtension = $fileInfo['filename']; // This is the filename without the extension
+
+        
+        // filename input in admin_files_versions table 
+        $fileName2 = basename($file['name']); // Get the original file name
+
+       
+        // File upload directory
+        $uploadDir = '../../uploads/files/admin_files/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Save file
+        $filePath = '../../uploads/files/admin_files/' . basename($file['name']);
+        if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to upload file.']);
+            exit;
+        }
+
+        // $fileSize = round(filesize($filePath) / 1024, 2);
+        // Convert file size to KB
+
+        $fileSizeInBytes = filesize($filePath);
+        if ($fileSizeInBytes < 1024) {
+            $fileSize = $fileSizeInBytes . ' Bytes'; // Less than 1 KB
+        } elseif ($fileSizeInBytes < 1024 * 1024) {
+            $fileSize = round($fileSizeInBytes / 1024, 2) . ' KB'; // Between 1 KB and 1 MB
+        } else {
+            $fileSize = round($fileSizeInBytes / (1024 * 1024), 2) . ' MB'; // 1 MB or larger
+        }
+
+
+        $file_path = '../uploads/files/admin_files/' . basename($file['name']);
+
+        // $file_path2 = '/west2es/uploads/files/admin_files/' . basename($file['name']);
+        
+        date_default_timezone_set('Asia/Manila');
+        $currentDatetime = date('Y-m-d H:i:s');
+
+        // Start a transaction to ensure atomicity
+        $pdo->beginTransaction();
+
+        // Check if the file already exists in admin_files
+        $stmt = $pdo->prepare("SELECT id FROM admin_files WHERE filename = :filename LIMIT 1");
+        $stmt->bindParam(':filename', $fileNameWithoutExtension, PDO::PARAM_STR); // Use the filename without the extension
+        $stmt->execute();
+        $existingFile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingFile) {
+            // File exists, add a new version
+            $fileId = $existingFile['id'];
+
+            $stmt = $pdo->prepare("SELECT MAX(version_no) AS max_version FROM admin_files_versions WHERE file_id = :file_id");
+            $stmt->bindParam(':file_id', $fileId, PDO::PARAM_INT);
+            $stmt->execute();
+            $maxVersion = $stmt->fetch(PDO::FETCH_ASSOC)['max_version'] ?? 0;
+
+            $newVersion = $maxVersion + 1;
+
+            // Insert new version
+            $stmt = $pdo->prepare("INSERT INTO admin_files_versions (file_id, version_no, file_path, datetime, file_size, filename)
+                                   VALUES (:file_id, :version_no, :file_path, :datetime, :file_size, :filename)");
+            $stmt->bindParam(':file_id', $fileId, PDO::PARAM_INT);
+            $stmt->bindParam(':version_no', $newVersion, PDO::PARAM_INT);
+            $stmt->bindParam(':file_path', $file_path2, PDO::PARAM_STR);
+            $stmt->bindParam(':datetime', $currentDatetime, PDO::PARAM_STR);
+            $stmt->bindParam(':file_size', $fileSize, PDO::PARAM_STR);
+            $stmt->bindParam(':filename', $fileName2, PDO::PARAM_STR);
+            $stmt->execute();
+        } else {
+
+
+            //save to files pending tables
+
+
+
+
+            // CREATE TABLE pending_files (
+            // id int(11) NOT NULL AUTO_INCREMENT,
+            // name varchar(255) NOT NULL,
+            // filename varchar(255) NOT NULL,
+            // status enum('pending','approve') NOT NULL DEFAULT 'pending',
+            // user_id int(11) NOT NULL,
+            // version_no varchar(255) NOT NULL,
+            // file_path varchar(255) NOT NULL,
+            // datetime datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            // file_size varchar(255) NOT NULL,
+            // status enum('pending','approve') NOT NULL DEFAULT 'pending',
+            // PRIMARY KEY (id),
+            // FULLTEXT KEY filename (filename)
+            // ) ENGINE=MyISAM AUTO_INCREMENT=39 DEFAULT CHARSET=latin1
+
+
+
+            $table1='admin_files';
+            $table2='admin_files_versions';    
+            $stmt = $pdo->prepare("INSERT INTO pending_files (name, filename,user_id,version_no,file_path,datetime,file_size,table1,table2) VALUES (:name, :filename,:user_id,1,:file_path,:datetime,:file_size,:table1,:table2)");
+            $stmt->bindParam(':name', $fileName, PDO::PARAM_STR);
+            $stmt->bindParam(':filename', $fileName2, PDO::PARAM_STR); // Use the filename without the extension
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':file_path', $file_path2, PDO::PARAM_STR);
+            $stmt->bindParam(':datetime', $currentDatetime, PDO::PARAM_STR);
+            $stmt->bindParam(':file_size', $fileSize, PDO::PARAM_STR);
+            $stmt->bindParam(':table1', $table1, PDO::PARAM_STR);
+            $stmt->bindParam(':table2', $table2, PDO::PARAM_STR);
+            $stmt->execute();
+
+
+            // File does not exist, insert into admin_files
+            // $stmt = $pdo->prepare("INSERT INTO admin_files (filename, user_id) VALUES (:filename, :user_id)");
+            // $stmt->bindParam(':filename', $fileName, PDO::PARAM_STR); // Use the filename without the extension
+            // $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            // $stmt->execute();
+            // $fileId = $pdo->lastInsertId();
+
+            // Add the first version
+            // $stmt = $pdo->prepare("INSERT INTO admin_files_versions (file_id, version_no, file_path, datetime, file_size, filename)
+            //                        VALUES (:file_id, 1, :file_path, :datetime, :file_size, :filename)");
+            // $stmt->bindParam(':file_id', $fileId, PDO::PARAM_INT);
+            // $stmt->bindParam(':file_path', $file_path, PDO::PARAM_STR);
+            // $stmt->bindParam(':datetime', $currentDatetime, PDO::PARAM_STR);
+            // $stmt->bindParam(':file_size', $fileSize, PDO::PARAM_STR);
+            // $stmt->bindParam(':filename', $fileName2, PDO::PARAM_STR);
+            // $stmt->execute();
+
+            // Log the notification
+            $role = $_SESSION['user_role'];
+
+            // Get the user's first name and last name from the session
+            $userFullName = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
+
+            // Log the notification for adding a new admin file with the user's full name from the session
+            try {
+                logNotification($userId, $role, 'add', "User $userFullName added a new pending admin file: $fileName");
+            } catch (Exception $e) {
+                error_log("Notification logging failed: " . $e->getMessage());
+            }
+
+        }
+
+        // Commit the transaction
+        $pdo->commit();
+
+        echo json_encode(['status' => 'success', 'message' => 'File uploaded successfully.']);
+    } catch (Exception $e) {
+        // Rollback the transaction on error
+        $pdo->rollBack();
+        echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request method.']);
+} can you make this as a function? if you notice i have an admin_file here in these codes, so far i have plenty of tables that will use this functions, like admin_files, cild_files, ldlr_files, my folder name and my database table name uses this words - admin_files, etc. admin_files table have link table admin_files_versions and also the other table, my folder storage is in uploads/files then there aer admin_files folder, ldlr_files folder, etc.
+
+ChatGPT said:
+ChatGPT
+To create a reusable function for handling file uploads and database interactions, you can generalize the code. Here's an example of how to implement it as a function, allowing you to specify the table names and folder paths dynamically.
+
+
+Created document
+How to Use
+Call the handleFileUpload function by passing the necessary parameters:
+
+php
+Copy
+Edit
+$response = handleFileUpload(
+    $_FILES['fileInput'],         // File input
+    $_POST['fileName'],           // File name input
+    $_SESSION,                    // Session data
+    $pdo,                         // Database connection
+    'admin_files',                // Main table name
+    'admin_files_versions',       // Versions table name
+    'admin_files'                 // Folder name
+);
+
+echo $response;
+This function is flexible for handling multiple tables and folder paths. You can replace admin_files with any other table or folder name like ldlr_files, child_files, etc.
+
+You said:
+ document.getElementById("addFileForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Disable the submit button to prevent multiple clicks
+    const submitButton = document.querySelector("#addFileForm button[type='submit']");
+    submitButton.disabled = true;
+    submitButton.innerText = "Saving..."; // Optionally change the button text to indicate saving
+
+    const formData = new FormData(this);
+
+    fetch("../functions/admin_files/add_file.php", {
+        method: "POST",
+        body: formData,
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                Swal.fire("Success", data.message, "success").then(() => {
+                    
+                    document.querySelector("#addFileModal .btn-close").click();
+                     // Reload the page to reflect changes
+                    location.reload();
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch((error) => {
+            Swal.fire("Error", "An unexpected error occurred.", "error");
+        })
+        .finally(() => {
+            // Re-enable the submit button after the action is complete
+            submitButton.disabled = false;
+            submitButton.innerText = "Save File"; // Reset the button text
+        });
+}); this is where i call the add_file.php 
+ChatGPT said:
+ChatGPT
+Your JavaScript code handles the form submission and interacts with the add_file.php endpoint to upload files. It uses the fetch API to send the form data and manage the UI states like disabling and re-enabling the submit button. The integration appears solid, but here are some suggestions and enhancements to ensure smooth functionality:
+
+Enhancements and Recommendations:
+Form Validation Before Submission: Add client-side validation to check the required fields before making the API request.
+
+javascript
+Copy
+Edit
+const fileInput = document.querySelector("#fileInput");
+const fileName = document.querySelector("#fileName");
+
+if (!fileName.value.trim() || !fileInput.files.length) {
+    Swal.fire("Error", "Please provide all required fields.", "error");
+    submitButton.disabled = false;
+    submitButton.innerText = "Save File";
+    return;
+}
+API URL Generalization: If you have multiple upload functionalities, make the API URL dynamic by passing it as a variable or determining it based on the context.
+
+javascript
+Copy
+Edit
+const apiUrl = "../functions/admin_files/add_file.php"; // Could be dynamic based on module
+fetch(apiUrl, {
+    method: "POST",
+    body: formData,
+})
+Improved Error Handling: Add more robust error handling to catch specific issues like network errors or server-side errors.
+
+javascript
+Copy
+Edit
+.catch((error) => {
+    console.error("Error:", error);
+    Swal.fire("Error", "An unexpected error occurred. Please try again later.", "error");
+});
+File Size and Type Validation (Optional): To prevent unsupported files or excessively large files from being uploaded, add file validation logic.
+
+javascript
+Copy
+Edit
+const maxFileSize = 5 * 1024 * 1024; // 5MB
+const allowedFileTypes = ["image/jpeg", "image/png", "application/pdf"];
+
+if (!allowedFileTypes.includes(fileInput.files[0].type)) {
+    Swal.fire("Error", "Unsupported file type. Please upload a JPEG, PNG, or PDF.", "error");
+    return;
+}
+
+if (fileInput.files[0].size > maxFileSize) {
+    Swal.fire("Error", "File size exceeds 5MB.", "error");
+    return;
+}
+UI Feedback Enhancement: While changing the button text is helpful, consider adding a spinner or disabling the form inputs for better user experience.
+
+javascript
+Copy
+Edit
+submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+Updated Code:
+Here's the enhanced code with the suggestions applied:
+
+javascript
+Copy
+Edit
+document.getElementById("addFileForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const submitButton = document.querySelector("#addFileForm button[type='submit']");
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+    const formData = new FormData(this);
+    const fileInput = document.querySelector("#fileInput");
+    const fileName = document.querySelector("#fileName");
+
+    // Validate inputs
+    if (!fileName.value.trim() || !fileInput.files.length) {
+        Swal.fire("Error", "Please provide all required fields.", "error");
+        submitButton.disabled = false;
+        submitButton.innerText = "Save File";
+        return;
+    }
+
+    // Optional: Validate file size and type
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const allowedFileTypes = ["image/jpeg", "image/png", "application/pdf"];
+
+    if (!allowedFileTypes.includes(fileInput.files[0].type)) {
+        Swal.fire("Error", "Unsupported file type. Please upload a JPEG, PNG, or PDF.", "error");
+        submitButton.disabled = false;
+        submitButton.innerText = "Save File";
+        return;
+    }
+
+    if (fileInput.files[0].size > maxFileSize) {
+        Swal.fire("Error", "File size exceeds 5MB.", "error");
+        submitButton.disabled = false;
+        submitButton.innerText = "Save File";
+        return;
+    }
+
+    // Make the API call
+    fetch("../functions/admin_files/add_file.php", {
+        method: "POST",
+        body: formData,
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                Swal.fire("Success", data.message, "success").then(() => {
+                    document.querySelector("#addFileModal .btn-close").click();
+                    location.reload(); // Reload the page to reflect changes
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire("Error", "An unexpected error occurred. Please try again later.", "error");
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = "Save File";
+        });
+});
+This updated script includes input validation, enhanced error handling, and improved UI feedback, ensuring a more robust and user-friendly experience.
+
+You said:
+i mean i want to you to make the add_file a function with needed parameter to cater different tables, folders, the one i mention earlier
+ChatGPT said:
+ChatGPT
+To create a flexible function for handling file uploads dynamically for different tables and folders, you can generalize the logic into a PHP function. This function will take parameters such as the table names, folder names, and input details, allowing it to work with different configurations. Below is the refactored add_file function:
+
+Edited
+Usage Example
+You can use the addFile function dynamically for any table and folder:
+
+php
+Copy
+Edit
+$response = addFile(
+    $_FILES['fileInput'],         // File input from form
+    $_POST['fileName'],           // File name input from form
+    $_SESSION,                    // Session data
+    $pdo,                         // Database connection
+    'admin_files',                // Main table name
+    'admin_files_versions',       // Versions table name
+    'admin_files'                 // Folder name
+);
+
+echo $response;
+You can replace 'admin_files' and 'admin_files_versions' with other table names and 'admin_files' with other folder names like 'ldlr_files' or 'child_files' for different use cases. The function dynamically handles all the logic based on the provided parameters.
+
+You said:
+im a bit confuse about these codes - $response = addFile(
+    $_FILES['fileInput'],         // File input from form
+    $_POST['fileName'],           // File name input from form
+    $_SESSION,                    // Session data
+    $pdo,                         // Database connection
+    'admin_files',                // Main table name
+    'admin_files_versions',       // Versions table name
+    'admin_files'                 // Folder name
+);
+
+echo $response;  where will i place these codes? since the javascript calls the add_file.php
+ChatGPT said:
+ChatGPT
+The code snippet you referenced will go in the add_file.php file because that's the endpoint being called by your JavaScript.
+
+Here's how you should structure your add_file.php file:
+
+add_file.php
+php
+Copy
+Edit
+<?php
+require_once '../db_connection.php';
+require_once '../notification_helper.php';
+require_once '../functions/file_upload_handler.php'; // Adjust the path as needed
+
+// Call the addFile function and pass the necessary parameters
+$response = addFile(
+    $_FILES['fileInput'],         // File input from the form
+    $_POST['fileName'],           // File name input from the form
+    $_SESSION,                    // Session data
+    $pdo,                         // Database connection
+    'admin_files',                // Main table name
+    'admin_files_versions',       // Versions table name
+    'admin_files'                 // Folder name
+);
+
+// Return the JSON response
+echo $response;
+Explanation
+Include Required Files:
+
+Ensure db_connection.php, notification_helper.php, and the file where the addFile function is defined (file_upload_handler.php) are included.
+Call the Function:
+
+Pass the required parameters to the addFile function. These parameters are dynamic and allow the function to handle different tables and folders.
+Echo the Response:
+
+The addFile function returns a JSON response. This response is echoed back to the client (JavaScript), which processes it and updates the UI.
+Integration with JavaScript
+Your JavaScript already calls add_file.php using the fetch API. When the form is submitted:
+
+The form data is sent to add_file.php.
+The addFile function processes the request.
+The JSON response from add_file.php is returned to the JavaScript code.
+Your JavaScript handles success or error states based on the response.
+This way, you keep your PHP logic reusable and modular while integrating it seamlessly with the JavaScript client.
+
+You said:
+as i had said earlier i want to input different tables i dont understand how to input the 3 parameters programatically
+ChatGPT said:
+ChatGPT
+To dynamically input different table names and folder paths programmatically, you can pass the table and folder names as part of the request from your JavaScript. Here's how you can handle this:
+
+Updated JavaScript Code
+Add parameters for table and folder names to your FormData object in JavaScript:
+
+javascript
+Copy
+Edit
+document.getElementById("addFileForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const submitButton = document.querySelector("#addFileForm button[type='submit']");
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+    const formData = new FormData(this);
+
+    // Add table and folder names dynamically (adjust these values based on context)
+    formData.append("tableMain", "admin_files");
+    formData.append("tableVersions", "admin_files_versions");
+    formData.append("folderName", "admin_files");
+
+    fetch("../functions/admin_files/add_file.php", {
+        method: "POST",
+        body: formData,
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                Swal.fire("Success", data.message, "success").then(() => {
+                    document.querySelector("#addFileModal .btn-close").click();
+                    location.reload();
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch((error) => {
+            Swal.fire("Error", "An unexpected error occurred.", "error");
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = "Save File";
+        });
+});
+Updated add_file.php
+Modify add_file.php to accept the table and folder names as parameters:
+
+php
+Copy
+Edit
+<?php
+require_once '../db_connection.php';
+require_once '../notification_helper.php';
+require_once '../functions/file_upload_handler.php'; // Adjust the path as needed
+
+// Validate the inputs
+if (!isset($_POST['tableMain'], $_POST['tableVersions'], $_POST['folderName'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Required parameters are missing.']);
+    exit;
+}
+
+// Retrieve table and folder names from the request
+$tableMain = $_POST['tableMain'];
+$tableVersions = $_POST['tableVersions'];
+$folderName = $_POST['folderName'];
+
+// Call the addFile function and pass the parameters dynamically
+$response = addFile(
+    $_FILES['fileInput'],         // File input from the form
+    $_POST['fileName'],           // File name input from the form
+    $_SESSION,                    // Session data
+    $pdo,                         // Database connection
+    $tableMain,                   // Main table name (dynamic)
+    $tableVersions,               // Versions table name (dynamic)
+    $folderName                   // Folder name (dynamic)
+);
+
+// Return the JSON response
+echo $response;
+Explanation of Dynamic Parameters
+JavaScript FormData:
+
+The JavaScript code appends tableMain, tableVersions, and folderName to the FormData object dynamically.
+You can set these values based on the module or context.
+Dynamic Handling in PHP:
+
+The add_file.php script retrieves these parameters from $_POST.
+These parameters are passed to the addFile function.
+Example Use Cases:
+
+Admin Files:
+javascript
+Copy
+Edit
+formData.append("tableMain", "admin_files");
+formData.append("tableVersions", "admin_files_versions");
+formData.append("folderName", "admin_files");
+LDLR Files:
+javascript
+Copy
+Edit
+formData.append("tableMain", "ldlr_files");
+formData.append("tableVersions", "ldlr_files_versions");
+formData.append("folderName", "ldlr_files");
+Child Files:
+javascript
+Copy
+Edit
+formData.append("tableMain", "child_files");
+formData.append("tableVersions", "child_files_versions");
+formData.append("folderName", "child_files");
+Key Benefits
+Reusability:
+The addFile function remains generic and can handle any table or folder dynamically.
+Scalability:
+Adding support for new tables or folders requires no changes to the backend logic—just pass new parameters.
+Separation of Concerns:
+The frontend determines which table and folder to use, while the backend focuses on processing the request.
+You said:
+<?php
+
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    echo 'Unauthorized Access';  
+    exit;
+
+}
+
+
+// Include database connection
+require 'db_connection.php'; 
+
+// Include the autoload file from PHPWord
+require __DIR__ . '/../vendor/autoload.php';
+
+use PhpOffice\PhpWord\IOFactory;
+
+// Check if file_id is provided in the query string
+if (!isset($_GET['file_id'])) {
+    die('File ID not provided.');
+}
+
+// Get the file_id from the query string
+$fileId = intval($_GET['file_id']);
+
+// Fetch the filename from the database
+$stmt = $pdo->prepare("SELECT filename FROM file_preview_mapping WHERE record_id = :file_id");
+$stmt->bindParam(':file_id', $fileId, PDO::PARAM_INT);
+$stmt->execute();
+$fileRecord = $stmt->fetch();
+
+if (!$fileRecord) {
+    die('File not found in the database.');
+}
+
+// Get the filename and construct the file path
+$file = $fileRecord['filename'];
+$filePath = $_SERVER['DOCUMENT_ROOT'] . $file;
+
+// Check if the file exists on the server
+if (!file_exists($filePath)) {
+    die('File not found on the server.');
+}
+
+// Load the Word document
+try {
+    $phpWord = IOFactory::load($filePath);
+} catch (Exception $e) {
+    die('Error loading file: ' . $e->getMessage());
+}
+
+// Extract and display document content
+$content = '';
+foreach ($phpWord->getSections() as $section) {
+    $elements = $section->getElements();
+    foreach ($elements as $element) {
+        if (method_exists($element, 'getText')) {
+            $content .= $element->getText() . "<br>";
+        }
+    }
+}
+
+// Display the content as HTML
+echo "<h1>Document Content</h1>";
+echo nl2br($content);
+?> please polish these codes and give it a professional look, you can use bootstrap or anything that will give a professional touch 
+ChatGPT said:
+ChatGPT
+Here’s an enhanced version of your code with a polished layout, styled with Bootstrap for a professional look. It includes improved error handling, proper security measures, and a more user-friendly interface:
+
+Edited
+Key Features of the Updated Code:
+Bootstrap Integration:
+
+Provides a clean and responsive layout for a professional appearance.
+Includes alerts for error messages and a styled card for document content.
+Improved Security:
+
+Used htmlspecialchars to escape content before rendering to prevent XSS attacks.
+User-Friendly Design:
+
+Added a "Go Back" button to improve navigation.
+Displayed clear alerts for errors like unauthorized access, missing file IDs, or file not found.
+Responsive Layout:
+
+The layout adapts to different screen sizes, ensuring usability on mobile, tablet, and desktop devices.
+You can use this polished code directly in your project for a professional document viewer.
+
+You said:
+this php file preview a word document for viewing, please generate a pdf viewer based on these codes for pdf files, so far this php file resides in a seperate folder that resides iin www folder of wampp and i install phpword through composer in www folder to make the said word viewer to run
+ChatGPT said:
+ChatGPT
+To create a PDF viewer based on your existing Word viewer, you can use the FPDI library, which is commonly used to handle and preview PDF files in PHP. Below is the modified PHP file to preview PDF files:
+
+
+Created document
+Explanation of the Code:
+PDF Embedding:
+
+The <embed> tag is used to display the PDF file directly in the browser.
+If the browser doesn't support embedding, a fallback message and a link to download the file are provided.
+Bootstrap Styling:
+
+Similar to the Word viewer, this code uses Bootstrap for a clean and professional layout.
+Dynamic File Loading:
+
+The file_id is used to fetch the file path from the database.
+The file is securely retrieved and displayed to the user.
+Security Measures:
+
+htmlspecialchars is applied to sanitize file paths to prevent XSS attacks.
+Notes:
+Ensure the PDF files are stored in a publicly accessible directory or use a PHP script to handle file streaming securely if the files are stored in a restricted location.
+If you haven't installed a PDF library yet, you can proceed without additional dependencies since this solution leverages native browser capabilities to display PDFs.
+You can use this file just like your Word viewer by navigating to the corresponding file_id. For example:
+
+arduino
+Copy
+Edit
+http://localhost/pdf_viewer.php?file_id=123
+You said:
+as i have said a while ago, the word viewer resides in a seperate folder than my php project, do i need to install fpdf in my www folder?
+ChatGPT said:
+ChatGPT
+If you're creating a PDF viewer, you do not need to install FPDF or any other library like FPDI if the purpose is only to display existing PDF files in the browser. The browser's native PDF viewer or the <embed> HTML element is sufficient to display PDFs. However, if you need to create, modify, or manipulate PDF files, then you would need a library like FPDF or FPDI.
+
+In Your Case:
+Since the Word viewer resides in a separate folder and you mentioned your PHP project is structured within www, here’s what you need to consider:
+
+PDF Viewer Without Library (Recommended for Viewing Only):
+
+The provided pdf_viewer.php does not depend on any external library.
+Ensure the file_preview_mapping database and PDF files are accessible from the folder where pdf_viewer.php resides.
+Place the pdf_viewer.php file in the same folder or adjust the file paths accordingly to match your project structure.
+When to Use FPDF:
+
+If your project requires generating or modifying PDFs dynamically (e.g., adding watermarks, merging files), you need FPDF or FPDI.
+To use these libraries, they should be installed in the root of your project (www folder), or you can use Composer to manage dependencies.
+How to Install FPDF in Your www Folder:
+If you need FPDF or FPDI for additional functionalities:
+
+Install via Composer (Preferred):
+
+Open a terminal or command prompt, navigate to your www folder, and run:
+bash
+Copy
+Edit
+composer require setasign/fpdf
+This will install FPDF into a vendor folder in your www directory.
+Manual Installation:
+
+Download the library from the FPDF website.
+Extract the contents into a folder within your project, e.g., www/fpdf.
+Include the library in your PHP files:
+php
+Copy
+Edit
+require_once '../fpdf/fpdf.php';
+Summary
+For Viewing PDFs: No need to install FPDF. Use the <embed> element or browser-native PDF viewer.
+For Generating/Manipulating PDFs: Install FPDF in your www folder using Composer or manually.
+Let me know if you need further clarification!
+
+You said:
+	admin_files_versions
+	aeld_files_versions
+	cild_files_versions
+	if_completed_files_versions
+	if_proposals_files_versions
+	lulr_files_versions
+	rp_completed_berf_files_versions
+	rp_completed_nonberf_files_versions
+	rp_proposal_berf_files_versions
+	rp_proposal_nonberf_files_versions these are all names of database tables, i want to add a field name - name with varchar(255) in the phpmyadmin  
+	t_lr_files_versions
+	t_pp_files_versions
+	t_rs_files_versions
+ChatGPT said:
+ChatGPT
+To add a new column named name with VARCHAR(255) in multiple tables using phpMyAdmin, you can follow these steps or automate the process with SQL commands.
+
+Manual Method via phpMyAdmin
+Access phpMyAdmin:
+
+Open phpMyAdmin and select your database.
+Modify Each Table:
+
+For each table:
+Select the table (e.g., admin_files_versions).
+Go to the "Structure" tab.
+Scroll to the bottom and click on "Add 1 column(s)".
+Set the column name as name, type as VARCHAR, and length as 255.
+Save the changes.
+Repeat for all the listed tables.
+
+SQL Script for Automation
+To add the name column to all tables in one go, you can run the following SQL script in phpMyAdmin's SQL query editor:
+
+sql
+Copy
+Edit
+ALTER TABLE `admin_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `aeld_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `cild_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `if_completed_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `if_proposals_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `lulr_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `rp_completed_berf_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `rp_completed_nonberf_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `rp_proposal_berf_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `rp_proposal_nonberf_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `t_lr_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `t_pp_files_versions` ADD `name` VARCHAR(255) NULL;
+ALTER TABLE `t_rs_files_versions` ADD `name` VARCHAR(255) NULL;
+Steps to Execute the Script
+Open phpMyAdmin.
+Select your database.
+Click on the SQL tab.
+Paste the SQL script into the query editor.
+Click Go to execute the script.
+Explanation
+ALTER TABLE: Modifies the structure of an existing table.
+ADD name VARCHAR(255) NULL: Adds a new column named name with a data type of VARCHAR(255) and allows NULL values.
+Let me know if you need assistance running this script!
+
+Messages beyond this point are only visible to you
+
+
+
+
+
+
+
+ChatGPT can make mistakes. Check important info.

@@ -1,0 +1,1340 @@
+<!-- code come form add_file, please dont delete         -->
+        // Check if a pending file exists in pending_files
+        $stmtCheckPending = $pdo->prepare("SELECT COUNT(*) AS pending_count FROM pending_files WHERE table2 = :table2 AND status = 'pending'");
+        $stmtCheckPending->bindParam(':table2', $table2, PDO::PARAM_STR);
+        $stmtCheckPending->execute();
+        $pendingCount = $stmtCheckPending->fetch(PDO::FETCH_ASSOC)['pending_count'];
+
+        if ($pendingCount > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'You cannot add a new file while there is a pending file awaiting admin approval.']);
+            exit;
+        }
+
+        // Continue with the file upload and database insertion logic using these values
+<!-- code come form add_file, please dont delete         -->
+
+
+
+//        $('.preview-file').on('click', function () {
+$('.edit-file').on('click', function () {
+
+
+
+app_id = "1732249"
+key = "7e21bf94e1a661247fc0"
+secret = "117f49779d2d523c1833"
+cluster = "ap1"
+
+
+<a href="../functions/generate_pdf.php?user_id=<?php echo $user['id_no'] ?? ''; ?>" target="_blank" class="btn btn-secondary">
+        Preview PDF
+    </a>
+
+
+
+<script type="text/javascript">
+    var message = "<?php echo $table2; ?>";
+    alert(message);
+</script>
+
+
+
+
+// Check if a pending file exists in pending_files
+    
+        $stmtCheckPending = $pdo->prepare("SELECT COUNT(*) AS pending_count FROM pending_files WHERE table2 = :table2 AND status = 'pending'");
+        $stmtCheckPending->bindParam(':table2', $table2, PDO::PARAM_STR);
+        $stmtCheckPending->execute();
+        $pendingCount = $stmtCheckPending->fetch(PDO::FETCH_ASSOC)['pending_count'];
+
+        if ($pendingCount > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'You cannot add a new file while there is a pending file awaiting admin approval.']);
+            exit;
+        }
+    
+
+
+
+let revisionsHtml = '';
+let maxVersion = 0;
+
+// Find the maximum version_no that is greater than 1
+response.data.forEach(revision => {
+    if (revision.version_no > 1 && revision.version_no > maxVersion) {
+        maxVersion = revision.version_no;
+    }
+});
+
+response.data.forEach(revision => {
+    revisionsHtml += 
+        `<tr>
+            <td>${revision.version_no}</td>
+            <td>${revision.filename}</td>
+            <td>${formatDateTime(revision.datetime)}</td>
+            <td>${revision.file_size}</td>
+            <td>
+                <button class="btn btn-warning btn-sm edit-revision" data-id="${revision.file_id}" data-table1="admin_files" data-table2="admin_files_versions"
+                data-version="${revision.version_no}">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                ${revision.version_no === maxVersion && revision.version_no > 1 ? 
+                    `<button class="btn btn-danger btn-sm delete-revision" 
+                        data-table1="admin_files" data-table2="admin_files_versions" 
+                        data-id="${revision.file_id}" data-version="${revision.version_no}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>` : ''}
+            </td>
+        </tr>`;
+});
+
+
+
+<!-- backup codes begin -->
+<button class="btn btn-danger btn-sm delete-revision" data-table1="admin_files" data-table2="admin_files_versions" data-id="${revision.file_id}" data-version="${revision.version_no}">
+<i class="fas fa-trash"></i> Delete
+</button>
+
+
+
+ ${revision.version_no > 1 ? `
+<button class="btn btn-danger btn-sm delete-revision" 
+    data-table1="admin_files" data-table2="admin_files_versions" 
+    data-id="${revision.file_id}" data-version="${revision.version_no}">
+    <i class="fas fa-trash"></i> Delete
+</button>` : ''}
+
+
+
+<!-- backup codes end -->
+
+
+
+Domain: cw2es.cicte.link
+Username: cw2escic
+Password: pn3mv3&%q&n6e*
+Term: 1
+Amount: 200.0000
+To log into your control panel please visit
+https://s11.jdchost.com:8090.
+
+ren t-rs*.pdf t-pp*.pdf 
+
+
+
+cw2es.cicte.link/west2es
+461118
+vb48gointomasterlevel@gmail.com
+22222222
+
+
+
+
+88888888888888888888888888888888888888
+
+
+
+
+
+ren t-rs*.pdf admin_files*.pdf 
+ren t-rs*.docx admin_files*.docx
+
+admin_files
+aeld_files
+cild_files
+if_completed_files
+if_proposals_files
+lulr_files
+rp_completed_berf_files
+rp_completed_nonberf_files
+rp_proposal_berf_files
+rp_proposal_nonberf_files
+t_lr_files
+t_pp_files
+t_rs_files
+
+
+ren t-rs*.pdf admin_files*.pdf 
+
+ren t-rs*.pdf t-pp*.pdf 
+
+
+
+
+
+
+CREATE TABLE `user_data` (
+ `id_no` int(10) unsigned NOT NULL AUTO_INCREMENT,
+ `deped_id_no` varchar(20) NOT NULL,
+ `last_name` varchar(50) NOT NULL,
+ `first_name` varchar(50) NOT NULL,
+ `middle_name` varchar(50) NOT NULL,
+ `email` varchar(100) NOT NULL,
+ `status` enum('active','inactive','pending') DEFAULT 'pending',
+ `role` enum('faculty','admin') NOT NULL,
+ `password` varchar(255) NOT NULL,
+ `reset_token` varchar(255) DEFAULT NULL,
+ PRIMARY KEY (`id_no`),
+ UNIQUE KEY `deped_id_no` (`deped_id_no`),
+ UNIQUE KEY `email` (`email`),
+ UNIQUE KEY `first_name` (`first_name`,`last_name`,`middle_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1
+
+
+CREATE TABLE `user_data_details` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `user_id` int(10) unsigned NOT NULL,
+ `suffix` varchar(20) DEFAULT NULL,
+ `date_of_birth` date DEFAULT NULL,
+ `birthplace` varchar(100) DEFAULT NULL,
+ `sex` enum('Male','Female','Other') DEFAULT NULL,
+ `position` varchar(100) DEFAULT NULL,
+ `contact_no` varchar(15) DEFAULT NULL,
+ `personal_gmail_account` varchar(100) DEFAULT NULL,
+ `bachelors_degree` varchar(255) DEFAULT NULL,
+ `post_graduate` varchar(255) DEFAULT NULL,
+ `major` varchar(100) DEFAULT NULL,
+ `employee_no` varchar(50) DEFAULT NULL,
+ `plantilla_no` varchar(50) DEFAULT NULL,
+ `philhealth_no` varchar(50) DEFAULT NULL,
+ `bp_no` varchar(50) DEFAULT NULL,
+ `pagibig_no` varchar(50) DEFAULT NULL,
+ `tin_no` varchar(50) DEFAULT NULL,
+ `prc_no` varchar(50) DEFAULT NULL,
+ `prc_validity_date` date DEFAULT NULL,
+ `phlisys_id_no` varchar(50) DEFAULT NULL,
+ `salary_grade` varchar(10) DEFAULT NULL,
+ `current_step_based_on_payslip` varchar(10) DEFAULT NULL,
+ `date_of_first_appointment` date DEFAULT NULL,
+ `date_of_latest_promotion` date DEFAULT NULL,
+ `first_day_of_service` date DEFAULT NULL,
+ `retirement_day` date DEFAULT NULL,
+ PRIMARY KEY (`id`),
+ UNIQUE KEY `user_id` (`user_id`),
+ CONSTRAINT `user_data_details_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id_no`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1
+
+
+
+
+-- Alter aeld_files table
+ALTER TABLE aeld_files
+ADD COLUMN status ENUM('pending', 'approve') NOT NULL DEFAULT 'pending';
+
+-- Alter aeld_files_versions table
+ALTER TABLE aeld_files_versions
+ADD COLUMN status ENUM('pending', 'approve') NOT NULL DEFAULT 'pending';
+
+
+
+
+
+
+
+require_once '../vendor/tecnickcom/tcpdf/tcpdf.php';
+
+
+
+<!-- faculty login -->
+237482
+Uy 	Cygnus 	Dela Cruz
+cygnusha@deped.gov.ph
+22222222
+
+<!-- admin login -->
+461118
+vb48gointomasterlevel@gmail.com
+22222222
+
+
+Here are 12 random 6-digit numbers:
+
+237482
+781989
+150586
+444207
+465726
+936682
+461118
+980193
+846408
+642224
+662607
+385917
+
+
+
+<?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: ../index.php');
+    exit;
+}
+?>
+
+<?php
+// Get the current file name
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+require_once '../functions/pageTitle.php';
+$pageTitle = getPageTitle($currentPage);
+?>
+
+
+<?php include '../includes/header.php'; ?>
+<?php include '../includes/top-navbar.php'; ?>
+<?php include '../includes/sidebar.php'; ?>
+
+
+  
+
+<div class="col-md-9 main-content">
+  
+</div>
+
+
+  <?php include '../includes/footer.php'; ?>
+
+
+
+
+//error message
+status	"error"
+message	"SQLSTATE[HY093]: Invalid parameter number"
+
+
+
+<!-- javascript -->
+ $(document).ready(function () {
+    // Retrieve user_role and user_id from the search-box element
+    const userRole = $('.search-box').data('role');
+    const userId = $('.search-box').data('user-id');
+
+    console.log('User Role:', userRole); // Debugging: Check the value in the console
+    console.log('User ID:', userId);     // Debugging: Check the value in the console
+
+    $('#searchInput').on('input', function () {
+        const query = $(this).val().trim();
+
+        if (query.length > 0) {
+            // Determine which endpoint to use based on user role
+            const endpoint = userRole === 'admin'
+                ? `../functions/search_suggestions.php?query=${encodeURIComponent(query)}`
+                : `../functions/search_suggestions_faculty.php?query=${encodeURIComponent(query)}&user_id=${encodeURIComponent(userId)}`;
+
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        let resultsHtml = '';
+                        data.data.forEach(file => {
+                            resultsHtml += `
+                                <li class="list-group-item">
+                                    <a href="#" class="search-result" data-table="${file.source_table}" data-id="${file.id}">
+                                        ${file.filename}
+                                    </a>
+                                </li>
+                            `;
+                        });
+
+                        $('#searchResults').html(resultsHtml).removeClass('d-none'); // Show results
+                    } else if (data.status === 'no_results') {
+                        $('#searchResults').html('<li class="list-group-item text-muted">No results found</li>').removeClass('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching search suggestions:', error);
+                });
+        } else {
+            $('#searchResults').addClass('d-none').html(''); // Hide results if query is empty
+        }
+    });
+});
+
+
+
+<!-- processing codes contact by javascript -->
+<?php
+require_once 'db_connection.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['query']) && isset($_GET['user_id'])) {
+    $query = trim($_GET['query']);
+    $user_id = (int)$_GET['user_id']; // Cast user_id to integer for security
+    
+    // Validate query and user_id
+    if (empty($query)) {
+        echo json_encode(['status' => 'error', 'message' => 'Query cannot be empty.']);
+        exit;
+    }
+
+    $query = "%$query%"; // Add wildcards for partial matching
+
+    try {
+        // Prepare SQL to search across multiple tables with user_id filtering
+        $stmt = $pdo->prepare("
+            SELECT 'admin_files' AS source_table, id, filename
+            FROM admin_files
+            WHERE LOWER(filename) LIKE LOWER(:query1) AND user_id = :user_id
+            UNION ALL
+            SELECT 'aeld_files' AS source_table, id, filename
+            FROM aeld_files
+            WHERE LOWER(filename) LIKE LOWER(:query2) AND user_id = :user_id
+            UNION ALL
+            SELECT 'cild_files' AS source_table, id, filename
+            FROM cild_files
+            WHERE LOWER(filename) LIKE LOWER(:query3) AND user_id = :user_id
+            UNION ALL
+            SELECT 'if_proposals_files' AS source_table, id, filename
+            FROM if_proposals_files
+            WHERE LOWER(filename) LIKE LOWER(:query4) AND user_id = :user_id
+            UNION ALL
+            SELECT 'lulr_files' AS source_table, id, filename
+            FROM lulr_files
+            WHERE LOWER(filename) LIKE LOWER(:query5) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_completed_berf_files' AS source_table, id, filename
+            FROM rp_completed_berf_files
+            WHERE LOWER(filename) LIKE LOWER(:query6) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_completed_nonberf_files' AS source_table, id, filename
+            FROM rp_completed_nonberf_files
+            WHERE LOWER(filename) LIKE LOWER(:query7) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_proposal_berf_files' AS source_table, id, filename
+            FROM rp_proposal_berf_files
+            WHERE LOWER(filename) LIKE LOWER(:query8) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_lr_files' AS source_table, id, filename
+            FROM t_lr_files
+            WHERE LOWER(filename) LIKE LOWER(:query9) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_pp_files' AS source_table, id, filename
+            FROM t_pp_files
+            WHERE LOWER(filename) LIKE LOWER(:query10) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_rs_files' AS source_table, id, filename
+            FROM t_rs_files
+            WHERE LOWER(filename) LIKE LOWER(:query11) AND user_id = :user_id
+            ORDER BY filename ASC
+            LIMIT 108
+        ");
+
+        // Bind the value separately for each placeholder
+        $stmt->execute([
+            'query1' => $query,
+            'query2' => $query,
+            'query3' => $query,
+            'query4' => $query,
+            'query5' => $query,
+            'query6' => $query,
+            'query7' => $query,
+            'query8' => $query,
+            'query9' => $query,
+            'query10' => $query,
+            'query11' => $query,
+            'user_id' => $user_id
+        ]);
+
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($results)) {
+            echo json_encode(['status' => 'success', 'data' => $results]);
+        } else {
+            echo json_encode(['status' => 'no_results', 'message' => 'No files found.']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
+}
+?>
+
+
+
+
+
+
+
+
+
+session_start();
+
+ // Log the notification
+$userId = $_SESSION['user_id'];
+$role = $_SESSION['user_role'];
+
+try {
+    logNotification($userId, $role, 'create', "Created an event: $name");
+} catch (Exception $e) {
+    $e->getMessage());
+}
+
+table: user_data
+    id_no Primary	int(11)
+    deped_id_no Index varchar(20)
+    last_name Index	varchar(50)
+    first_name Index varchar(50)
+    middle_name Index varchar(50)
+    email Index	varchar(100)
+    status enum('active', 'inactive', 'pending')
+    role enum('faculty', 'admin')
+    password varchar(255)
+    reset_token	varchar(255)
+
+table: user_data_details
+id
+user_id
+Suffix
+Date of Birth
+Birthplace
+Sex
+Position
+Contact No
+Personal Gmall Account
+Bachelor's Degree
+Post Graduate
+Major
+Employee No
+Plantilla No
+Philhealth No
+BP NO
+Pagibig No
+TIN NO
+PRC NO
+PRC Validity Date
+Phlisys ID No
+Salary Grade
+Current Step Based on the Payslip
+Date of First Appointment
+Date of Latest Promotion
+1st Day of Service
+Retirement Day
+
+
+
+
+table: events
+    id Primary int(11)
+	name varchar(255)
+	description	text
+	location varchar(255)
+	datetime datetime
+	created_at timestamp
+
+table: notifications
+    id Primary int(11)
+	user_id	int(11)
+	role varchar(50)
+	activity_type varchar(50)
+	description	text
+	created_at timestamp
+	seen tinyint(1)
+
+    
+Files
+    -Administrative Files
+    table: admin_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+     table: admin_files_versions   
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Files/Administrative Files
+
+    -Curriculum Implementation and Learning Delivery
+    table: cild_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Files/Curriculum Implementation and Learning Delivery
+
+    -Localization and Utilization of Learning Resources
+    table: lulr_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Files/Localization and Utilization of Learning Resources
+
+    -Assessment/Evaluation of Learner's Development
+    table: aeld_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Files/Assessment Evaluation of Learner's Development
+
+Innovation Files
+    -Proposals
+    table: IF_proposals_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Innovation Files/Proposals
+    
+    -Completed
+    table: IF_completed_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+    
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+    Innovation Files/Completed
+
+Research Papers
+    -Proposals
+    -BERF
+     table: RP_proposal_berf_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+     
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+     Research Papers/Proposals/BERF
+    
+    -Non-BERF
+     table: RP_proposal_nonberf_files
+        id Primary int(11)
+        filename varchar(255)
+        user_id	int(11)
+     
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+     Research Papers/Proposals/BERF
+    
+    -Completed 
+    -BERF
+     table: RP_completed_berf_files
+        id Primary	int(11)
+        filename	varchar(255)
+        user_id	int(11)
+     
+        id Primary int(11)	
+        filename varchar(255)
+        file_id Index int(11)	
+        version_no varchar(255)
+        file_path varchar(255)
+        datetime datetime	
+        file_size varchar(255)
+     Research Papers/Completed/BERF
+       
+    -Non-BERF
+     table: RP_completed_nonberf_files
+        id Primary	int(11)
+        filename	varchar(255)
+        user_id	int(11)
+     
+        id Primary	int(11)	
+        filename	varchar(255)
+        file_id Index	int(11)	
+        version_no	varchar(255)
+        file_path	varchar(255)
+        datetime	datetime	
+        file_size	varchar(255)
+     Research Papers/Completed/Non BERF
+
+Transparency
+-Liquidation Reports
+ table: t_lr_files
+    id Primary	int(11)
+    filename	varchar(255)
+    user_id	int(11)
+ 
+    id Primary	int(11)	
+    filename	varchar(255)
+    file_id Index	int(11)	
+    version_no	varchar(255)
+    file_path	varchar(255)
+    datetime	datetime	
+    file_size	varchar(255)
+ Transparency/Liquidation Reports
+
+-Project Proposals
+ table: t_pp_files
+    id Primary	int(11)
+    filename	varchar(255)
+    user_id	int(11)
+ 
+    id Primary	int(11)	
+    filename	varchar(255)
+    file_id Index	int(11)	
+    version_no	varchar(255)
+    file_path	varchar(255)
+    datetime	datetime	
+    file_size	varchar(255)
+ Transparency/Project Proposals
+
+-Realignment and Supplementals
+ table: t_rs_files
+    id Primary	int(11)
+    filename	varchar(255)
+    user_id	int(11)
+ 
+    id Primary	int(11)	
+    filename	varchar(255)
+    file_id Index	int(11)	
+    version_no	varchar(255)
+    file_path	varchar(255)
+    datetime	datetime	
+    file_size	varchar(255)
+ Transparency/Realignment and Supplementals
+
+table: cild_files
+
+
+table: lulr_files
+
+
+table: aeld_files
+
+
+table: IF_proposals_files
+
+
+table: IF_completed_files
+
+
+table: RP_proposal_berf_files
+
+
+table: RP_proposal_nonberf_files
+
+
+table: RP_completed_berf_files
+
+
+table: RP_completed_nonberf_files
+
+
+table: t_lr_files
+
+
+table: t_pp_files
+
+
+table: t_rs_files
+
+
+
+CREATE TABLE `cild_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+CREATE TABLE `lulr_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+
+CREATE TABLE `IF_proposals_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `IF_proposals_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+CREATE TABLE `IF_proposals_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+CREATE TABLE `RP_proposal_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `RP_proposal__nonber_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `RP_completed_berf_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `RP_completed_nonberf_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `t_lr_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+CREATE TABLE `t_pp_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+CREATE TABLE `t_rs_files` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `user_id` int(11) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `filename` varchar(255) NOT NULL,
+ `file_id` int(11) NOT NULL,
+ `version_no` varchar(255) NOT NULL,
+ `file_path` varchar(255) NOT NULL,
+ `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `file_size` varchar(255) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `file_id` (`file_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=latin1
+
+
+admin_files
+aeld_files
+cild_files
+if_proposals_files
+if_completed_files
+lulr_files
+rp_completed_berf_files
+rp_completed_nonberf_files
+rp_proposal_files
+rp_proposal_nonber_files
+t_lr_files
+t_pp_files
+t_rs_files
+
+
+
+user_data
+
+
+
+
+
+admin_files - admin_files_versions
+aeld_files - aeld_files_versions
+cild_files - cild_files_versions
+if_proposals_files - if_proposals_files_versions
+<?php
+require_once '../db_connection.php';
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (!isset($_GET['file_id'])) {
+        echo json_encode(['status' => 'error', 'message' => 'File ID is required.']);
+        exit;
+    }
+
+    $fileId = filter_var($_GET['file_id'], FILTER_SANITIZE_NUMBER_INT);
+
+    // Define the table name
+    $table_name = "if_proposals_files_versions";
+
+    try {
+        $stmt = $pdo->prepare("SELECT version_no, filename, file_path, datetime, file_size, file_id, download_path 
+                               FROM if_proposals_files_versions 
+                               WHERE file_id = :file_id 
+                               ORDER BY version_no DESC");
+        $stmt->bindParam(':file_id', $fileId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $revisions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($revisions) {
+            // Add the table_name to each record in the revisions array
+            foreach ($revisions as &$revision) {
+                $revision['table_name'] = $table_name;
+            }
+
+            echo json_encode(['status' => 'success', 'data' => $revisions]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No revisions found for this file.']);
+        }
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request method.']);
+}
+
+lulr_files - lulr_files_versions
+rp_completed_berf_files - rp_completed_berf_files 
+rp_completed_nonberf_files
+rp_proposal_berf_files
+rp_completed_nonberf_files
+t_lr_files
+t_pp_files
+t_rs_files
+
+
+	admin_files - admin_files_versions
+	aeld_files - Aeld_files_versions
+	cild_files - cild_files_versions
+	if_completed_files - if_completed_files_versions
+    if_proposals_files - if_proposals_files_versions
+    lulr_files - lulr_files_versions
+	rp_completed_berf_files - rp_completed_berf_files_versions
+    rp_completed_nonberf_files - rp_completed_nonberf_files_versions
+    rp_proposal_berf_files - rp_proposal_berf_files_versions
+    rp_proposal_nonberf_files - rp_proposal_nonberf_files_versions
+	t_lr_files - t_lr_files_versions
+    t_pp_files - t_pp_files_versions
+    t_rs_files - t_rs_files_versions
+
+
+
+
+
+	admin_files_versions
+	aeld_files_versions
+	cild_files_versions
+	if_completed_files_versions
+	if_proposals_files_versions
+	lulr_files_versions
+	rp_completed_berf_files_versions
+	rp_completed_nonberf_files_versions
+	rp_proposal_berf_files_versions
+	rp_proposal_nonberf_files_versions
+	t_lr_files_versions
+	t_pp_files_versions
+	t_rs_files_versions
+
+
+
+
+
+
+
+
+
+
+
+try {
+    // Prepare SQL to search across multiple tables
+    $stmt = $pdo->prepare("
+        SELECT 'admin_files' AS source_table, id, filename
+        FROM admin_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'aeld_files' AS source_table, id, filename
+        FROM aeld_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'cild_files' AS source_table, id, filename
+        FROM cild_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'if_proposals_files' AS source_table, id, filename
+        FROM if_proposals_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'lulr_files' AS source_table, id, filename
+        FROM lulr_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'rp_completed_berf_files' AS source_table, id, filename
+        FROM rp_completed_berf_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'rp_completed_nonberf_files' AS source_table, id, filename
+        FROM rp_completed_nonberf_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 'rp_proposal_berf_files' AS source_table, id, filename
+        FROM rp_proposal_berf_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 't_lr_files' AS source_table, id, filename
+        FROM t_lr_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 't_pp_files' AS source_table, id, filename
+        FROM t_pp_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        UNION ALL
+        SELECT 't_rs_files' AS source_table, id, filename
+        FROM t_rs_files
+        WHERE LOWER(filename) LIKE LOWER(:query)
+        ORDER BY filename ASC
+        LIMIT 108
+    ");
+
+    // Bind the query value
+    $stmt->execute(['query' => $query]);
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return results
+    if (!empty($results)) {
+        echo json_encode(['status' => 'success', 'data' => $results]);
+    } else {
+        echo json_encode(['status' => 'no_results', 'message' => 'No files found.']);
+    }
+} catch (PDOException $e) {
+    // Handle database errors
+    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+}
+
+
+
+
+
+
+search_suggestions new codes
+
+<?php
+require_once 'db_connection.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['query']) && isset($_GET['user_id'])) {
+    $query = trim($_GET['query']);
+    $user_id = (int)$_GET['user_id']; // Cast user_id to integer for security
+    
+    // Validate query and user_id
+    if (empty($query)) {
+        echo json_encode(['status' => 'error', 'message' => 'Query cannot be empty.']);
+        exit;
+    }
+
+    $query = "%$query%"; // Add wildcards for partial matching
+
+    try {
+        // Prepare SQL to search across multiple tables with user_id filtering
+        $stmt = $pdo->prepare("
+            SELECT 'admin_files' AS source_table, id, filename
+            FROM admin_files
+            WHERE LOWER(filename) LIKE LOWER(:query1) AND user_id = :user_id
+            UNION ALL
+            SELECT 'aeld_files' AS source_table, id, filename
+            FROM aeld_files
+            WHERE LOWER(filename) LIKE LOWER(:query2) AND user_id = :user_id
+            UNION ALL
+            SELECT 'cild_files' AS source_table, id, filename
+            FROM cild_files
+            WHERE LOWER(filename) LIKE LOWER(:query3) AND user_id = :user_id
+            UNION ALL
+            SELECT 'if_proposals_files' AS source_table, id, filename
+            FROM if_proposals_files
+            WHERE LOWER(filename) LIKE LOWER(:query4) AND user_id = :user_id
+            UNION ALL
+            SELECT 'lulr_files' AS source_table, id, filename
+            FROM lulr_files
+            WHERE LOWER(filename) LIKE LOWER(:query5) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_completed_berf_files' AS source_table, id, filename
+            FROM rp_completed_berf_files
+            WHERE LOWER(filename) LIKE LOWER(:query6) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_completed_nonberf_files' AS source_table, id, filename
+            FROM rp_completed_nonberf_files
+            WHERE LOWER(filename) LIKE LOWER(:query7) AND user_id = :user_id
+            UNION ALL
+            SELECT 'rp_proposal_berf_files' AS source_table, id, filename
+            FROM rp_proposal_berf_files
+            WHERE LOWER(filename) LIKE LOWER(:query8) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_lr_files' AS source_table, id, filename
+            FROM t_lr_files
+            WHERE LOWER(filename) LIKE LOWER(:query9) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_pp_files' AS source_table, id, filename
+            FROM t_pp_files
+            WHERE LOWER(filename) LIKE LOWER(:query10) AND user_id = :user_id
+            UNION ALL
+            SELECT 't_rs_files' AS source_table, id, filename
+            FROM t_rs_files
+            WHERE LOWER(filename) LIKE LOWER(:query11) AND user_id = :user_id
+            ORDER BY filename ASC
+            LIMIT 108
+        ");
+
+        // Bind the value separately for each placeholder
+        $stmt->execute([
+            'query1' => $query,
+            'query2' => $query,
+            'query3' => $query,
+            'query4' => $query,
+            'query5' => $query,
+            'query6' => $query,
+            'query7' => $query,
+            'query8' => $query,
+            'query9' => $query,
+            'query10' => $query,
+            'query11' => $query,
+            'user_id' => $user_id
+        ]);
+
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($results)) {
+            echo json_encode(['status' => 'success', 'data' => $results]);
+        } else {
+            echo json_encode(['status' => 'no_results', 'message' => 'No files found.']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
+}
+?>
+
+
+
+
+
+
+<?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: ../index.php');
+    exit;
+}
+?>
+
+<?php
+// Get the current file name
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+require_once '../functions/pageTitle.php';
+$pageTitle = getPageTitle($currentPage);
+?>
+
+
+<?php include '../includes/header.php'; ?>
+<?php include '../includes/top-navbar.php'; ?>
+<?php include '../includes/sidebar.php'; ?>
+
+
+  
+<div class="col-md-9 main-content">
+  
+</div>
+
+
+
+  <?php include '../includes/footer.php'; ?>
+

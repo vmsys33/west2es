@@ -1,0 +1,165 @@
+Khen
+Simbahon
+N/A
+N/A
+Prk.9A Kinalumsan brgy. Poblacion 1, Sagay City, Negros Occidental
+6122(postal code)
+09453268291
+khensimbahon@gmail.com
+
+Email:    arisgarken@gmail.com
+Pass:     arisgarKEN20_25
+
+
+west2es@010925
+margallomariz@gmail.com 
+
+arisgarken@gmail.com
+dlwx munn jcsp ffei
+
+
+
+admin_files table
+=======================
+id Primary	int(11)
+filename	varchar(255)
+user_id	int(11)	
+
+admin_files_versions
+========================
+id Primary	int(11)
+filename	varchar(255)
+file_id Index	int(11)	
+version_no	varchar(255)
+file_path	varchar(255)
+datetime	datetime	
+file_size	varchar(255)
+
+admin_files_versions table field file_id connects to admin_files table field id
+all file tables have the same format
+
+
+admin_files
+admin_files_versions	
+aeld_files
+aeld_files_versions
+
+c
+Pico
+Giovanni
+Pico
+vb48gointomasterlevel@gmail.com
+11111111
+
+11-35164644
+arisgarken@gmail.com
+22222222
+
+
+
+
+javascript
+ // Handle click on search result
+    $(document).on('click', '.search-result', function (e) {
+        e.preventDefault();
+
+        const table = $(this).data('table');
+        const id = $(this).data('id');
+
+        // Fetch file details and show them in the modal
+        fetch(`../functions/fetch_file_details.php?table=${table}&id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    $('#fileDetailsModal .modal-body').html(`
+                        <p><strong>Filename:</strong> ${data.file.filename}</p>
+                        <p><strong>Table:</strong> ${data.file.source_table}</p>
+                        <p><strong>ID:</strong> ${data.file.id}</p>
+                    `);
+
+                    $('#fileDetailsModal').modal('show');
+                } else {
+                    alert('Error fetching file details.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+    // Handle click on search result end
+
+
+
+
+
+file_path - ../uploads/files/admin_files/rules_and_regulation2025.docx
+
+
+<button class="btn btn-primary btn-sm download-file" data-url="${revision.file_path}">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+
+
+<!-- javascript -->
+
+$(document).on('click', '.download-file', function () {
+    const fileUrl = $(this).data('url'); // Get sanitized file path from the data-url attribute
+
+    if (fileUrl) {
+        const downloadUrl = `../functions/download_file2.php?file=${encodeURIComponent(fileUrl)}`;
+        window.location.href = downloadUrl; // Trigger the download
+    } else {
+        Swal.fire('Error', 'File URL is missing or invalid.', 'error');
+    }
+});
+
+
+
+
+download_file.php
+<?php
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file'])) {
+    $filePath = $_GET['file'];
+
+    // 1. Sanitize the file path
+    $filePath = realpath($filePath);
+
+    // 2. Validate the file path (check if it's within the allowed directory)
+    $allowedDirectory = $_SERVER['DOCUMENT_ROOT'] . '/west2es/uploads/'; // Adjust if needed
+
+    if (strpos($filePath, $allowedDirectory) !== 0) {
+        http_response_code(403); // Forbidden
+        echo "Access denied.";
+        exit;
+    }
+
+    // 3. (Optional) Check user permissions or authentication
+
+    // ... (Your permission check logic here) ...
+
+    if (file_exists($filePath)) {
+        // Set the appropriate headers to trigger a file download
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($filePath) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($filePath));
+        readfile($filePath);
+        exit;
+    } else {
+        http_response_code(404); // File not found
+        echo "File not found.";
+    }
+} else {
+    http_response_code(400); // Bad request
+    echo "Invalid request.";
+}
+
+?>
+
+
+
+
