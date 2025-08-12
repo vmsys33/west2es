@@ -93,3 +93,38 @@ The dashboard is primarily a data-driven page that presents key metrics in a cle
   - The script then dynamically displays the returned suggestions in a dropdown list.
   - It includes features for keyboard navigation (up/down arrows, Enter) and a button to clear the search input.
   - This search functionality is a global feature of the admin panel, likely included via `includes/top-navbar.php`.
+
+## 3. Sidebar Navigation
+
+The sidebar is the primary navigation tool within the admin and faculty dashboard areas, providing access to all major sections of the application.
+
+### 3.1. File Breakdown
+
+#### `includes/sidebar.php`
+- **Purpose**: This file generates the collapsible, multi-level navigation menu on the left side of the dashboard.
+- **Functionality**:
+  - **Role-Based Access Control**: The sidebar is highly dynamic and uses PHP to display different menu items based on the logged-in user's role (`$_SESSION['user_role']`). For example, "Settings" and "Pending Users" are only visible to 'admin' users, while "My Profile" is only for 'faculty'.
+  - **Dynamic Notification Badges**: It directly queries the database to fetch counts for pending users, pending files, and unseen notifications, displaying these counts in red badges next to the relevant menu items. This gives users an immediate visual cue for items that require their attention.
+  - **Active State Highlighting**: The script checks the current page's filename and adds an `active` class to the corresponding link, making it easy for users to see which section they are currently in.
+  - **`content.php` Integration**: A key feature is its integration with `pages/content.php`. Most of the file management links (e.g., "Administrative Files," "Proposals") point to `content.php` with a `current_page` URL parameter (e.g., `content.php?current_page=admin_files`). This shows that `content.php` acts as a generic template for displaying different file categories.
+
+## 4. Generic Content Page
+
+The `content.php` page is a reusable and central component for displaying and managing all file-related data in the application.
+
+### 4.1. File Breakdown
+
+#### `pages/content.php`
+- **Purpose**: This file acts as a generic template to render lists of files based on the category selected from the sidebar.
+- **Functionality**:
+  - **Dynamic Content Rendering**: It uses the `current_page` URL parameter to dynamically determine which set of files to display. For instance, if the URL is `content.php?current_page=aeld_files`, the page fetches and displays files from the `aeld_files` and `aeld_files_versions` database tables.
+  - **Security**: It uses a whitelist (`$allowedPages`) to validate the `current_page` parameter, preventing potential SQL injection vulnerabilities.
+  - **Full CRUD and Version Control**: The page provides a complete set of tools for file management, all handled through modals and AJAX:
+    - **Add File**: Upload new files to the current category.
+    - **Preview Revisions**: View a detailed history of all versions of a file, with options to preview each version in a compatible document viewer (e.g., PDF.js for PDFs, Office Web Apps for Word/Excel).
+    - **Add/Edit/Rename/Delete Revisions**: Users can manage the entire lifecycle of a file's revisions.
+    - **Delete File**: Admins can permanently delete a file and all its associated versions.
+  - **Client-Side Enhancement**: The page is heavily enhanced with JavaScript:
+    - **jQuery/AJAX**: Powers all the interactive features, ensuring that actions happen without requiring a full page reload.
+    - **DataTables**: The file list is rendered in an HTML table that is enhanced with the DataTables.js library, providing out-of-the-box sorting, searching, and pagination.
+    - **SweetAlert**: Used for user-friendly confirmation dialogs and notifications.
