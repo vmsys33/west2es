@@ -13,9 +13,12 @@ docs/
 ├── authentication/                     # Authentication and user management
 │   └── login-process.md               # Login process documentation
 ├── file-management/                    # File management system
-│   └── upload-process.md              # File upload process
+│   ├── upload-process.md              # File upload process
+│   └── crud-operations.md             # Complete CRUD operations
 ├── database/                          # Database documentation
 │   └── table-structure.md             # Database schema and relationships
+├── system-functions/                  # System functions reference
+│   └── function-reference.md          # Complete function reference
 ├── api/                               # API documentation (future)
 ├── user-management/                   # User management features (future)
 └── system-configuration/              # System configuration (future)
@@ -27,6 +30,8 @@ docs/
 - **[System Overview](system-overview.md)** - Start here for architecture understanding
 - **[Database Structure](database/table-structure.md)** - Database schema and relationships
 - **[File Management](file-management/upload-process.md)** - File upload and management processes
+- **[CRUD Operations](file-management/crud-operations.md)** - Complete file CRUD operations
+- **[Function Reference](system-functions/function-reference.md)** - All system functions reference
 
 ### For Administrators
 - **[Authentication](authentication/login-process.md)** - User authentication and security
@@ -35,6 +40,7 @@ docs/
 ### For Users
 - **[System Overview](system-overview.md)** - General system information
 - **[File Management](file-management/upload-process.md)** - How to upload and manage files
+- **[CRUD Operations](file-management/crud-operations.md)** - How to edit, preview, download files
 
 ## 🔄 Documentation Updates
 
@@ -85,6 +91,8 @@ function example() {
 2. Review the **[Database Structure](database/table-structure.md)**
 3. Understand the **[Authentication System](authentication/login-process.md)**
 4. Explore **[File Management](file-management/upload-process.md)**
+5. Study **[CRUD Operations](file-management/crud-operations.md)** for file operations
+6. Reference **[Function Reference](system-functions/function-reference.md)** for all functions
 
 ### For System Administrators
 1. Review **[System Overview](system-overview.md)** for system capabilities
@@ -143,4 +151,6 @@ To contribute to the documentation:
 - [System Overview](system-overview.md)
 - [Login Process](authentication/login-process.md)
 - [File Upload Process](file-management/upload-process.md)
+- [CRUD Operations](file-management/crud-operations.md)
+- [Function Reference](system-functions/function-reference.md)
 - [Database Structure](database/table-structure.md)
