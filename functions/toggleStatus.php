@@ -6,6 +6,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = $_POST['status'];
 
     try {
+        // Start transaction for data consistency
+        $pdo->beginTransaction();
+
         // Fetch the details of the pending file
         $stmt = $pdo->prepare("SELECT * FROM pending_files WHERE id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -18,58 +21,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Missing table1 or table2 value in pending_files');
             }
 
-            // Update the status of the pending file
-            // $updateStmt = $pdo->prepare("UPDATE pending_files SET status = :status WHERE id = :id");
-            // $updateStmt->bindParam(':status', $status, PDO::PARAM_STR);
-            // $updateStmt->bindParam(':id', $id, PDO::PARAM_INT);
-            // $updateStmt->execute();
-
-
-            // Delete the pending file
-            $deleteStmt = $pdo->prepare("DELETE FROM pending_files WHERE id = :id");
-            $deleteStmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $deleteStmt->execute();
-
-
-
-
             $versionNo = intval($pendingFile['version_no']); // Convert version_no to an integer
 
             if ($status === 'approve') {
                 if ($versionNo === 1) {
                     // Insert into table1 only if version_no is 1
-                    $stmtTable1 = $pdo->prepare("INSERT INTO {$pendingFile['table1']} (filename, user_id, status) VALUES (:filename, :user_id, :status)");
+                    $stmtTable1 = $pdo->prepare("INSERT INTO {$pendingFile['table1']} (filename, user_id) VALUES (:filename, :user_id)");
                     $stmtTable1->bindParam(':filename', $pendingFile['name'], PDO::PARAM_STR);
                     $stmtTable1->bindParam(':user_id', $pendingFile['user_id'], PDO::PARAM_INT);
-                    $stmtTable1->bindParam(':status', $status, PDO::PARAM_STR); // Adding approve status
                     $stmtTable1->execute();
                     $fileId = $pdo->lastInsertId();
 
                     // Insert into table2 with full details
                     $stmtTable2 = $pdo->prepare("INSERT INTO {$pendingFile['table2']} 
-                        (file_id, version_no, download_path, file_path, datetime, file_size, name, filename, status)
-                        VALUES (:file_id, :version_no, :download_path, :file_path, :datetime, :file_size, :name, :filename, :status)");
+                        (file_id, version_no, file_path, datetime, file_size, filename)
+                        VALUES (:file_id, :version_no, :file_path, :datetime, :file_size, :filename)");
                     $stmtTable2->bindParam(':file_id', $fileId, PDO::PARAM_INT);
                     $stmtTable2->bindParam(':version_no', $pendingFile['version_no'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':download_path', $pendingFile['download_path'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':file_path', $pendingFile['file_path'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':datetime', $pendingFile['datetime'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':file_size', $pendingFile['file_size'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':name', $pendingFile['name'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':filename', $pendingFile['filename'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':status', $status, PDO::PARAM_STR); // Adding approve status
                     $stmtTable2->execute();
 
-                    // Save data in file_preview_mapping
-                    // $stmtMapping = $pdo->prepare("INSERT INTO file_preview_mapping (filename, table_name, record_id, version_no, created_at) 
-                    //     VALUES (:filename, :table_name, :record_id, :version_no, NOW())");
-                    // $stmtMapping->bindParam(':filename', $pendingFile['file_path'], PDO::PARAM_STR);
-                    // $stmtMapping->bindParam(':table_name', $pendingFile['table2'], PDO::PARAM_STR);
-                    // $stmtMapping->bindParam(':record_id', $fileId, PDO::PARAM_INT);
-                    // $stmtMapping->bindParam(':version_no', $pendingFile['version_no'], PDO::PARAM_STR);
-                    // $stmtMapping->execute();
-
-                     // Insert into master_files when version_no is 1
+                    // Insert into master_files when version_no is 1
                     $stmtMaster = $pdo->prepare("INSERT INTO master_files 
                         (file_id, name, filename, user_id, version_no, file_path, datetime, file_size, table1, table2, download_path) 
                         VALUES (:file_id, :name, :filename, :user_id, :version_no, :file_path, :datetime, :file_size, :table1, :table2, :download_path)");
@@ -86,19 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmtMaster->bindParam(':download_path', $pendingFile['download_path'], PDO::PARAM_STR);
                     $stmtMaster->execute();
                 } else {
-                     // Insert into table2 with full details
+                    // Insert into table2 with full details for revisions
                     $stmtTable2 = $pdo->prepare("INSERT INTO {$pendingFile['table2']} 
-                        (file_id, version_no, download_path, file_path, datetime, file_size, name, filename, status)
-                        VALUES (:file_id, :version_no, :download_path, :file_path, :datetime, :file_size, :name, :filename, :status)");
+                        (file_id, version_no, file_path, datetime, file_size, filename)
+                        VALUES (:file_id, :version_no, :file_path, :datetime, :file_size, :filename)");
                     $stmtTable2->bindParam(':file_id', $pendingFile['file_id'], PDO::PARAM_INT);
                     $stmtTable2->bindParam(':version_no', $pendingFile['version_no'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':download_path', $pendingFile['download_path'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':file_path', $pendingFile['file_path'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':datetime', $pendingFile['datetime'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':file_size', $pendingFile['file_size'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':name', $pendingFile['name'], PDO::PARAM_STR);
                     $stmtTable2->bindParam(':filename', $pendingFile['filename'], PDO::PARAM_STR);
-                    $stmtTable2->bindParam(':status', $status, PDO::PARAM_STR); // Adding approve status
                     $stmtTable2->execute();
 
                     // Insert into master_files for other versions
@@ -117,26 +89,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmtMaster->bindParam(':download_path', $pendingFile['download_path'], PDO::PARAM_STR);
                     $stmtMaster->bindParam(':file_id', $pendingFile['file_id'], PDO::PARAM_INT);
                     $stmtMaster->execute();
+                }
 
-                    // Save data in file_preview_mapping
-                    // $stmtMapping = $pdo->prepare("INSERT INTO file_preview_mapping (filename, table_name, record_id, version_no, created_at) 
-                    //     VALUES (:filename, :table_name, :record_id, :version_no, NOW())");
-                    // $stmtMapping->bindParam(':filename', $pendingFile['file_path'], PDO::PARAM_STR);
-                    // $stmtMapping->bindParam(':table_name', $pendingFile['table2'], PDO::PARAM_STR);
-                    // $stmtMapping->bindParam(':record_id',  $pendingFile['file_id'], PDO::PARAM_INT);
-                    // $stmtMapping->bindParam(':version_no', $pendingFile['version_no'], PDO::PARAM_STR);
-                    // $stmtMapping->execute();
-
-
+                // Log the approval action (optional)
+                try {
+                    $approverId = $_SESSION['user_id'] ?? 0;
+                    $approverName = ($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '');
+                    $logStmt = $pdo->prepare("INSERT INTO file_approval_logs 
+                        (pending_file_id, file_name, approved_by, approved_by_name, approval_date, target_table1, target_table2) 
+                        VALUES (?, ?, ?, ?, NOW(), ?, ?)");
+                    $logStmt->execute([
+                        $id, 
+                        $pendingFile['name'], 
+                        $approverId, 
+                        $approverName,
+                        $pendingFile['table1'],
+                        $pendingFile['table2']
+                    ]);
+                } catch (Exception $e) {
+                    // Log error but don't fail the approval process
+                    error_log("Failed to log approval: " . $e->getMessage());
                 }
             }
 
-            echo json_encode(['success' => true]);
+            // ONLY DELETE FROM PENDING_FILES AFTER SUCCESSFUL INSERTION
+            $deleteStmt = $pdo->prepare("DELETE FROM pending_files WHERE id = :id");
+            $deleteStmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $deleteStmt->execute();
+
+            // Commit the transaction
+            $pdo->commit();
+
+            echo json_encode(['success' => true, 'message' => 'File approved successfully']);
         } else {
+            $pdo->rollBack();
             echo json_encode(['success' => false, 'message' => 'File not found']);
         }
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        // Rollback transaction on error
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log("File approval error: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
 }
 ?>

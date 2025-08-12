@@ -26,23 +26,135 @@ $pageTitle = getPageTitle($currentPage);
 
 <h4 class="mb-3">List of Faculty Members</h4>
 <div class="table-responsive">
-    <table id="facultyTable" class="table table-bordered">
-        <thead>
+    <table id="facultyTable" class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
             <tr>
+                <th class="text-center">Photo</th>
                 <th>DepEd ID No</th>
                 <th>Last Name</th>
                 <th>First Name</th>
                 <th>Middle Name</th>
                 <th>Status</th>
                 <th>Email</th>
-                <th>Action</th>
+                <th class="text-center">Action</th>
             </tr>
         </thead>
         <tbody>
             <!-- Data will be dynamically populated here -->
         </tbody>
-    </table>
+    </table> 
 </div>
+
+<style>
+.faculty-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+}
+
+.faculty-photo-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* DataTable responsive styles - only affects mobile/tablet */
+@media (max-width: 768px) {
+    .dtr-details {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .dtr-details li {
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.5rem 0;
+    }
+
+    .dtr-details li:last-child {
+        border-bottom: none;
+    }
+
+    .dtr-title {
+        font-weight: 600;
+        color: #495057;
+        min-width: 120px;
+        display: inline-block;
+    }
+
+    /* Custom styling for DataTable's responsive controls */
+    .dtr-control {
+        cursor: pointer;
+        text-align: center;
+        color: #007bff;
+    }
+
+    .dtr-control:before {
+        content: "⊕";
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .dtr-control.dtr-expanded:before {
+        content: "⊖";
+    }
+}
+
+/* Hide responsive controls on desktop */
+@media (min-width: 769px) {
+    .dtr-control {
+        display: none !important;
+    }
+}
+
+/* Improve mobile experience */
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center;
+    }
+    
+    .dataTables_wrapper .dataTables_info {
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .faculty-photo,
+    .faculty-photo-placeholder {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}
+</style>
 
 <div class="mt-3">
     <a href="../export_faculty_excel.php" class="btn btn-success">Export to Excel</a>
@@ -76,8 +188,64 @@ $pageTitle = getPageTitle($currentPage);
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    // Initialize DataTable for faculty members
-    let facultyTableInstance = $('#facultyTable').DataTable();
+    // Initialize DataTable for faculty members with DataTable's built-in responsive features
+    let facultyTableInstance = $('#facultyTable').DataTable({
+        responsive: {
+            details: {
+                type: 'column',
+                target: 'tr'
+            },
+            breakpoints: [
+                { name: 'bigdesktop', width: Infinity },
+                { name: 'meddesktop', width: 1480 },
+                { name: 'desktop', width: 1024 },
+                { name: 'tablet', width: 768 },
+                { name: 'phone', width: 480 }
+            ]
+        },
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+        order: [[2, 'asc']], // Sort by last name
+        columnDefs: [
+            { 
+                orderable: false, 
+                targets: [0, 7] // Disable sorting for Photo and Action columns
+            },
+            { 
+                searchable: false, 
+                targets: [0, 7] // Disable search for Photo and Action columns
+            },
+            { 
+                responsivePriority: 1, 
+                targets: [0, 1, 2, 3, 7] // Always show Photo, DepEd ID, Names, Actions on desktop
+            },
+            { 
+                responsivePriority: 2, 
+                targets: [5] // Then Status
+            },
+            { 
+                responsivePriority: 3, 
+                targets: [4, 6] // Finally Middle Name, Email (collapse only on very small screens)
+            },
+            { 
+                className: "text-center", 
+                targets: [0, 7] // Center align Photo and Action columns
+            }
+        ],
+        language: {
+            search: "Search faculty:",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ faculty members",
+            infoEmpty: "No faculty members found",
+            infoFiltered: "(filtered from _MAX_ total entries)",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
 
     // Load Faculty Data
     const loadFacultyData = () => {
@@ -90,14 +258,31 @@ $pageTitle = getPageTitle($currentPage);
 
                     // Add rows dynamically
                     data.data.forEach(user => {
+                        // Create photo HTML
+                        let photoHtml = '';
+                        if (user.photo && user.photo.trim() !== '') {
+                            photoHtml = `<img src="../uploads/user_photos/${user.photo}" alt="Photo" class="faculty-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="faculty-photo-placeholder" style="display:none;">${user.first_name.charAt(0)}</div>`;
+                        } else {
+                            photoHtml = `<div class="faculty-photo-placeholder">${user.first_name.charAt(0)}</div>`;
+                        }
+
                         facultyTableInstance.row.add([
+                            `<div class="text-center">${photoHtml}</div>`,
                             user.deped_id_no,
                             user.last_name,
                             user.first_name,
                             user.middle_name || '-', // Handle null values
-                            user.status,
+                            `<span class="badge ${user.status === 'active' ? 'bg-success' : user.status === 'pending' ? 'bg-warning' : 'bg-secondary'}">${user.status}</span>`,
                             user.email,
-                            `<button class="btn btn-sm btn-primary view-btn" data-id="${user.id_no}" data-bs-toggle="modal" data-bs-target="#facultyModal">View</button>`
+                            `<div class="text-center">
+                                <button class="btn btn-sm btn-primary view-btn me-1" data-id="${user.id_no}" data-bs-toggle="modal" data-bs-target="#facultyModal">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${user.id_no}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>`
                         ]);
                     });
 
@@ -164,7 +349,31 @@ $pageTitle = getPageTitle($currentPage);
                     document.querySelector('#facultyDetails').innerHTML = '<p>Error loading details.</p>';
                 });
         }
+        if (e.target.classList.contains('delete-btn')) {
+            const facultyId = e.target.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this faculty member?')) {
+                fetch(`../functions/delete_faculty.php?id=${facultyId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire('Deleted!', 'Faculty member deleted successfully.', 'success');
+                        loadFacultyData(); // Refresh the table
+                    } else {
+                        Swal.fire('Error!', 'Error deleting faculty member: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error!', 'Error deleting faculty member.', 'error');
+                    console.error(error);
+                });
+            }
+        }
     });
 });
 
 </script>
+
+<!-- Add SweetAlert2 script (latest stable version) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

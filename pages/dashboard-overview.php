@@ -96,8 +96,8 @@ $totalEvents = $stmt->fetch(PDO::FETCH_ASSOC)['total_events'];
                 <i class="fas fa-user"></i>
                 <span class="info-label">PENDING<br>USERS</span>
                 <span class="info-value">
-                    <a href="pending-users.php" class="text-dark" style="text-decoration: none;">
-                        <?php echo $pendingUsersCount; ?>
+                    <a href="pending-users.php" class="text-dark notification-link" data-auto-mark="true" style="text-decoration: none;">
+                        <span class="pending-users-count"><?php echo $pendingUsersCount; ?></span>
                     </a>
                 </span>
             </div>
@@ -107,8 +107,8 @@ $totalEvents = $stmt->fetch(PDO::FETCH_ASSOC)['total_events'];
                 <i class="fas fa-file-alt"></i>
                 <span class="info-label">PENDING<br>FILES</span>
                 <span class="info-value">
-                    <a href="pending-files.php" class="text-dark" style="text-decoration: none;">
-                        <?php echo $pendingFilesCount; ?>
+                    <a href="pending-files.php" class="text-dark notification-link" data-auto-mark="true" style="text-decoration: none;">
+                        <span class="pending-files-count"><?php echo $pendingFilesCount; ?></span>
                     </a>
                 </span>
             </div>
@@ -125,8 +125,8 @@ $totalEvents = $stmt->fetch(PDO::FETCH_ASSOC)['total_events'];
                 <i class="fas fa-bell"></i>
                 <span class="info-label">NOTIFICATIONS</span>
                 <span class="info-value">
-                    <a href="notification.php" class="text-dark" style="text-decoration: none;">
-                        <?php echo $notificationCount; ?>
+                    <a href="notification.php" class="text-dark notification-link" data-auto-mark="true" style="text-decoration: none;">
+                        <span class="notification-count"><?php echo $notificationCount; ?></span>
                     </a>
                 </span>
             </div>

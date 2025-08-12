@@ -3,22 +3,29 @@ $user_role = $_SESSION['user_role']; // Default to 'guest' if not set
 
 // Get user photo if user is logged in
 $userPhoto = null;
-if (isset($_SESSION['id_no'])) {
+if (isset($_SESSION['user_id'])) {
     require_once '../functions/upload_user_photo.php';
-    $userPhoto = getUserPhoto($_SESSION['id_no']);
+    $userPhoto = getUserPhoto($_SESSION['user_id']);
 }
+
+// Get dynamic school logo from session or use default
+$schoolLogo = $_SESSION['school_logo'] ?? '';
+$schoolLogoPath = !empty($schoolLogo) ? '../uploads/' . $schoolLogo : '../assets/images/logo1.png';
+
+// Debug information (remove this after testing)
+echo "<!-- Debug: schoolLogo = '$schoolLogo', schoolLogoPath = '$schoolLogoPath', userPhoto = '$userPhoto', user_id = " . ($_SESSION['user_id'] ?? 'NOT SET') . " -->";
 ?>
 <body data-user-role="<?= htmlspecialchars($user_role);
 ?>">
 
 <div id="loader">
-    <img src="../assets/images/logo1.png" alt="Website Logo" />
+    <img src="<?= htmlspecialchars($schoolLogoPath) ?>" alt="Website Logo" />
 </div>
 
   <!-- container-fluid begin -->
   <div class="container-fluid p-0">
     <div class="bg-primary text-white py-2 d-flex align-items-center justify-content-center">
-      <img src="../assets/images/logo1.png" alt="School Logo" class="me-2 rounded-circle" style="width: 40px; height: 40px;">
+      <img src="<?= htmlspecialchars($schoolLogoPath) ?>" alt="School Logo" class="me-2 rounded-circle" style="width: 40px; height: 40px;">
       <h5 class="m-0 blue-header-text">Cadiz West 2 Elementary School</h5>
     </div>
 
@@ -39,10 +46,11 @@ if (isset($_SESSION['id_no'])) {
               </span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="pages/profile_photo.php"><i class="fas fa-camera me-2"></i>Manage Photo</a></li>
-              <li><a class="dropdown-item" href="pages/profile.php"><i class="fas fa-user me-2"></i>Profile</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            <?php if ($_SESSION['user_role'] !== 'faculty'): ?>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <?php endif; ?>
+              <li><a class="dropdown-item" href="#" onclick="confirmLogout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
             </ul>
           </div>
         </div>
@@ -57,7 +65,7 @@ if (isset($_SESSION['id_no'])) {
         <div id="searchSuggestions" class="list-group" style="display: none; position: absolute; z-index: 999; background-color: white; width: 100%; "></div>
       </div>
 
-      
+    
 
      
 
@@ -85,8 +93,26 @@ if (isset($_SESSION['id_no'])) {
     </div>
 </div>
 
+<!-- Include Profile Modal -->
+<?php include '../modals/profile_modal.php'; ?>
+
 <div class="row">
 
-
-
-
+<script>
+function confirmLogout() {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to logout from the system?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, logout!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'logout.php';
+        }
+    });
+}
+</script>

@@ -7,7 +7,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 // Include the PhpWord library (adjust the path to where the vendor folder is located)
-require __DIR__ . '/vendor/autoload.php'; // This assumes the `view_word.php` is in `west2es` and the `vendor` folder is one level up
+require __DIR__ . '/vendor/autoload.php'; // Vendor folder is in the same directory as view_word.php
 
 use PhpOffice\PhpWord\IOFactory;
 
@@ -18,11 +18,24 @@ if (isset($_GET['file_path'])) {
 
     // Process the file - account for west2es directory
     $documentRoot = $_SERVER['DOCUMENT_ROOT'];
-    $west2esPath = $documentRoot . '/west2es/';
-    $fileAbsolutePath = $west2esPath . ltrim($filePath, '/');
+    
+    // Handle different path formats
+    if (strpos($filePath, '/west2es/') === 0) {
+        // Path already includes /west2es/
+        $fileAbsolutePath = $documentRoot . $filePath;
+    } else {
+        // Path is relative, add /west2es/
+        $west2esPath = $documentRoot . '/west2es/';
+        $fileAbsolutePath = $west2esPath . ltrim($filePath, '/');
+    }
 
     if (!file_exists($fileAbsolutePath)) {
-        die('<div class="alert alert-warning text-center" role="alert">File not found on the server. Path: ' . htmlspecialchars($fileAbsolutePath) . '</div>');
+        die('<div class="alert alert-warning text-center" role="alert">
+            <strong>File not found on the server.</strong><br>
+            <strong>Requested path:</strong> ' . htmlspecialchars($filePath) . '<br>
+            <strong>Absolute path:</strong> ' . htmlspecialchars($fileAbsolutePath) . '<br>
+            <strong>Document root:</strong> ' . htmlspecialchars($documentRoot) . '
+        </div>');
     }
 
     // Get the filename

@@ -52,11 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'if_proposals_files', 'lulr_files', 'rp_completed_berf_files', 
         'rp_completed_nonberf_files', 'rp_proposal_berf_files', 
         'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files',
+        'approved_proposal',
         'admin_files_versions', 'aeld_files_versions', 'cild_files_versions', 
         'if_completed_files_versions', 'if_proposals_files_versions', 'lulr_files_versions', 
         'rp_completed_berf_files_versions', 'rp_completed_nonberf_files_versions', 
         'rp_proposal_berf_files_versions', 'rp_proposal_nonberf_files_versions', 
-        't_lr_files_versions', 't_pp_files_versions', 't_rs_files_versions'
+        't_lr_files_versions', 't_pp_files_versions', 't_rs_files_versions',
+        'approved_proposal_versions'
     ];
 
     if (!in_array($table1, $allowedTables) || !in_array($table2, $allowedTables)) {

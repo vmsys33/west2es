@@ -43,7 +43,7 @@ $stmt = $pdo->prepare("
         user_data ud 
         ON af.user_id = ud.id_no
     WHERE 
-        af.status = 'approve' -- Filter for rows where cild_files.status is 'approve'
+        1=1 -- Show all approved files (status is handled in pending_files table)
     GROUP BY 
         af.id, af.filename, af.user_id, ud.first_name, ud.last_name
 ");

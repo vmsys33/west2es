@@ -26,6 +26,9 @@ include '../functions/config.php';
 
 <link rel="stylesheet" href="<?php echo $baseUrl; ?>assets/styles.css">
 
+<!-- Notification Handler Script -->
+<script src="<?php echo $baseUrl; ?>assets/js/notification-handler.js"></script>
+
 <style>
     /* Completely disable browser default validation feedback */
     input:valid, input:invalid {

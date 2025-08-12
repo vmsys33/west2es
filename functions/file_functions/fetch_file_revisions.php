@@ -52,7 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'rp_proposal_nonberf_files_versions',
         't_lr_files_versions',
         't_pp_files_versions',
-        't_rs_files_versions'
+        't_rs_files_versions',
+        'approved_proposal_versions'
     ];
 
     // Validate table name

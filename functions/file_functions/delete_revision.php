@@ -46,11 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'if_proposals_files', 'lulr_files', 'rp_completed_berf_files', 
         'rp_completed_nonberf_files', 'rp_proposal_berf_files', 
         'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files',
+        'approved_proposal',
         'admin_files_versions', 'aeld_files_versions', 'cild_files_versions', 
         'if_completed_files_versions', 'if_proposals_files_versions', 'lulr_files_versions', 
         'rp_completed_berf_files_versions', 'rp_completed_nonberf_files_versions', 
         'rp_proposal_berf_files_versions', 'rp_proposal_nonberf_files_versions', 
-        't_lr_files_versions', 't_pp_files_versions', 't_rs_files_versions'
+        't_lr_files_versions', 't_pp_files_versions', 't_rs_files_versions',
+        'approved_proposal_versions'
     ];
 
     if (!in_array($fileTable1, $allowedTables) || !in_array($fileTable2, $allowedTables)) {
@@ -94,13 +96,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Delete the physical file
-        $physicalFilePath = $_SERVER['DOCUMENT_ROOT'] . $revision['file_path'];
-        if (file_exists($physicalFilePath)) {
-            if (!unlink($physicalFilePath)) {
-                error_log("Failed to delete physical file: " . $physicalFilePath);
-                // Continue with database deletion even if physical file deletion fails
+        // Delete the physical file - try multiple possible paths
+        $possiblePaths = [
+            $_SERVER['DOCUMENT_ROOT'] . $revision['file_path'],
+            '../../uploads/files/' . str_replace('_versions', '', $fileTable2) . '/' . $revision['filename'],
+            '../uploads/files/' . str_replace('_versions', '', $fileTable2) . '/' . $revision['filename'],
+            'uploads/files/' . str_replace('_versions', '', $fileTable2) . '/' . $revision['filename']
+        ];
+        
+        $fileDeleted = false;
+        foreach ($possiblePaths as $physicalFilePath) {
+            if (file_exists($physicalFilePath)) {
+                if (unlink($physicalFilePath)) {
+                    $fileDeleted = true;
+                    error_log("Successfully deleted revision file: $physicalFilePath");
+                    break;
+                } else {
+                    error_log("Failed to delete revision file: $physicalFilePath");
+                }
             }
+        }
+        
+        if (!$fileDeleted) {
+            error_log("Could not find or delete revision file: " . $revision['filename']);
+            // Continue with database deletion even if physical file deletion fails
         }
 
         // Delete from the versions table

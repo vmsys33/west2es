@@ -13,13 +13,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fileTable1 = filter_var($_POST['file_table1'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);  // Get the first table name
         $fileTable2 = filter_var($_POST['file_table2'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);  // Get the second table name
         $fileVersion = filter_var($_POST['file_version'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        
+        // Define allowed tables to prevent SQL injection
+        $allowedTables = [
+            'admin_files', 'aeld_files', 'cild_files', 'if_completed_files', 
+            'if_proposals_files', 'lulr_files', 'rp_completed_berf_files', 
+            'rp_completed_nonberf_files', 'rp_proposal_berf_files', 
+            'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files',
+            'approved_proposal',
+            'admin_files_versions', 'aeld_files_versions', 'cild_files_versions', 
+            'if_completed_files_versions', 'if_proposals_files_versions', 'lulr_files_versions', 
+            'rp_completed_berf_files_versions', 'rp_completed_nonberf_files_versions', 
+            'rp_proposal_berf_files_versions', 'rp_proposal_nonberf_files_versions', 
+            't_lr_files_versions', 't_pp_files_versions', 't_rs_files_versions',
+            'approved_proposal_versions'
+        ];
+
+        if (!in_array($fileTable1, $allowedTables) || !in_array($fileTable2, $allowedTables)) {
+            $response['message'] = 'Invalid table name.';
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+        }
         try {
             // Start transaction
             $pdo->beginTransaction();
 
             // Fetch all file revisions before deletion
             $stmt = $pdo->prepare("SELECT filename FROM $fileTable2 WHERE file_id = :file_id");
-            $stmt->execute(['file_id' => $file_id]);
+            $stmt->bindParam(':file_id', $file_id, PDO::PARAM_INT);
+            $stmt->execute();
             $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Collect filenames for logging
@@ -28,34 +51,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Loop through all revision files and delete them
             foreach ($files as $file) {
-                $filePath = '../../uploads/files/' . $fileTable1 . '/' . $file['filename']; // Adjust the path dynamically
-
-                // Check if the file exists and delete it
-                if (file_exists($filePath)) {
-                    unlink($filePath); // Delete the file
+                // Try multiple possible file paths
+                $possiblePaths = [
+                    '../../uploads/files/' . $fileTable1 . '/' . $file['filename'],
+                    '../uploads/files/' . $fileTable1 . '/' . $file['filename'],
+                    'uploads/files/' . $fileTable1 . '/' . $file['filename']
+                ];
+                
+                $fileDeleted = false;
+                foreach ($possiblePaths as $filePath) {
+                    if (file_exists($filePath)) {
+                        if (unlink($filePath)) {
+                            $fileDeleted = true;
+                            error_log("Successfully deleted file: $filePath");
+                            break;
+                        } else {
+                            error_log("Failed to delete file: $filePath");
+                        }
+                    }
+                }
+                
+                if (!$fileDeleted) {
+                    error_log("Could not find or delete file: " . $file['filename']);
                 }
             }
             
               // Delete from the file versions table (dynamic table)
             $stmt1 = $pdo->prepare("DELETE FROM $fileTable1 WHERE id = :file_id");
-            $stmt1->execute([
-                'file_id' => $file_id
-            ]);
+            $stmt1->bindParam(':file_id', $file_id, PDO::PARAM_INT);
+            $stmt1->execute();
 
               // Delete from the file versions table (dynamic table)
             $stmt2 = $pdo->prepare("DELETE FROM $fileTable2 WHERE file_id = :file_id");
-            $stmt2->execute([
-                'file_id' => $file_id
-            ]);
+            $stmt2->bindParam(':file_id', $file_id, PDO::PARAM_INT);
+            $stmt2->execute();
 
             // Delete from master_files with conditions on table1 and version_no
             $stmtMaster = $pdo->prepare("DELETE FROM master_files WHERE file_id = :file_id AND table1 = :fileTable1");
-            $stmtMaster->execute([
-                'file_id' => $file_id,
-                'fileTable1' => $fileTable1
-        
-        
-            ]);
+            $stmtMaster->bindParam(':file_id', $file_id, PDO::PARAM_INT);
+            $stmtMaster->bindParam(':fileTable1', $fileTable1, PDO::PARAM_STR);
+            $stmtMaster->execute();
 
             // Commit transaction
             $pdo->commit();

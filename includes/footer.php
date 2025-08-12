@@ -263,7 +263,7 @@
                                 <td>${formatDateTime(revision.datetime)}</td>
                                 <td>${revision.file_size}</td>
                                  <td>
-                                    <a href="${revision.file_path}" class="btn btn-sm btn-primary" download-file2><i class="fas fa-download"></i></a>
+                                    <a href="#" class="btn btn-sm btn-primary download-file2" data-url="${revision.file_path}"><i class="fas fa-download"></i></a>
                                     ${viewerButton} <!-- Dynamically generated viewer button -->
                                 </td>
                             </tr>
@@ -375,6 +375,14 @@
 $(document).on('click', '.download-file2', function () {
     const fileUrl = $(this).data('url'); // Retrieve the file URL
     const fileName = fileUrl.split('/').pop(); // Extract file name
+    
+    // Extract the relative path from uploads directory
+    let relativePath = fileUrl;
+    if (fileUrl.includes('uploads/')) {
+        relativePath = fileUrl.split('uploads/')[1];
+    } else if (fileUrl.includes('/west2es/uploads/')) {
+        relativePath = fileUrl.split('/west2es/uploads/')[1];
+    }
 
     Swal.fire({
         title: 'Download Confirmation',
@@ -385,7 +393,7 @@ $(document).on('click', '.download-file2', function () {
         cancelButtonText: 'No, cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            const downloadUrl = `../functions/download_file.php?file=${encodeURIComponent(fileUrl)}`;
+            const downloadUrl = `../functions/file_functions/download_file.php?file=${encodeURIComponent(relativePath)}`;
             window.location.href = downloadUrl; // Trigger download
         }
     });

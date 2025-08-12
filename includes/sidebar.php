@@ -23,10 +23,10 @@
               $pendingUsersCount = $stmt->fetch(PDO::FETCH_ASSOC)['pending_count'];
 
               echo '<li class="submenu-item py-2">
-                      <a href="pending-users.php" class="nav-link text-white ' . ($currentPage == 'pending-users.php' ? 'active' : '') . '">
+                      <a href="pending-users.php" class="nav-link text-white ' . ($currentPage == 'pending-users.php' ? 'active' : '') . '" data-auto-mark="true">
                           <i class="fas fa-users me-2"></i>Pending Users';
               if ($pendingUsersCount > 0) {
-                  echo '<span class="badge bg-danger ms-2">' . $pendingUsersCount . '</span>';
+                  echo '<span class="badge bg-danger ms-2 pending-users-badge">' . $pendingUsersCount . '</span>';
               }
               echo '</a></li>';
 
@@ -36,10 +36,10 @@
               $pendingFilesCount = $stmt->fetch(PDO::FETCH_ASSOC)['pending_count'];
 
               echo '<li class="submenu-item py-2">
-                      <a href="pending-files.php" class="nav-link text-white ' . ($currentPage == 'pending-files.php' ? 'active' : '') . '">
+                      <a href="pending-files.php" class="nav-link text-white ' . ($currentPage == 'pending-files.php' ? 'active' : '') . '" data-auto-mark="true">
                           <i class="fas fa-file-alt me-2"></i>Pending Files';
               if ($pendingFilesCount > 0) {
-                  echo '<span class="badge bg-danger ms-2">' . $pendingFilesCount . '</span>';
+                  echo '<span class="badge bg-danger ms-2 pending-files-badge">' . $pendingFilesCount . '</span>';
               }
               echo '</a></li>';
           }
@@ -47,8 +47,8 @@
 
           <!-- Notification Menu -->
           <li class="submenu-item py-2">
-            <a href="notification.php" class="nav-link text-white <?php echo $currentPage == 'notification.php' ? 'active' : ''; ?>">
-              <i class="fas fa-file-alt me-2"></i>Notifications
+            <a href="notification.php" class="nav-link text-white notification-link <?php echo $currentPage == 'notification.php' ? 'active' : ''; ?>" data-auto-mark="true">
+              <i class="fas fa-bell me-2"></i>Notifications
               <?php
 
               require_once '../functions/db_connection.php';// Fetch unseen notifications count
@@ -58,7 +58,7 @@
 
               // Display badge only if there are unseen notifications
               if ($notificationCount > 0) {
-                  echo '<span class="badge bg-danger ms-2">' . $notificationCount . '</span>';
+                  echo '<span class="badge bg-danger ms-2 notification-badge">' . $notificationCount . '</span>';
               }
               ?>
             </a>
@@ -100,6 +100,11 @@
                     <i class="fas fa-file-alt me-2"></i>Assessment/Evaluation of Learner's Development
                 </a>
               </li>
+              <li class="submenu-item py-2">
+    <a href="content.php?current_page=approved_proposal" class="nav-link text-white <?php echo $currentPage == 'approved_proposal' ? 'active' : ''; ?>">
+        <i class="fas fa-file-alt me-2"></i>Approved Proposal
+    </a>
+</li>
             </ul>
           </li>
 

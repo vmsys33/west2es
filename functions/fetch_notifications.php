@@ -11,8 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 try {
-    // Fetch all unseen notifications
-    $stmt = $pdo->prepare("SELECT id, description, created_at FROM notifications WHERE seen = 0 ORDER BY created_at DESC");
+    // Fetch all notifications (both seen and unseen)
+    $stmt = $pdo->prepare("SELECT id, description, created_at, seen FROM notifications ORDER BY created_at DESC");
     $stmt->execute();
 
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);

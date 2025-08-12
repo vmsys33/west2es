@@ -28,7 +28,7 @@
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <label for="depedIdNo" class="form-label">DepEd ID No. (7 digits)</label>
-                            <input type="text" class="form-control" id="depedIdNo" name="deped_id_no" required pattern="^\d{7}$">
+                            <input type="text" class="form-control" id="depedIdNo" name="deped_id_no" required pattern="^\d{7}$" minlength="7" maxlength="7">
                             <div class="invalid-feedback">Enter exactly 7 digits.</div>
                         </div>
                        
@@ -38,7 +38,7 @@
                         <div class="col-md-6">
                             <label for="registerEmail" class="form-label">DepEd Email</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="registerEmail" name="email_prefix" autocomplete="off" required
+                                <input type="email" class="form-control" id="registerEmail" name="email_prefix" autocomplete="off" required
                                     pattern="^[^@]+$" placeholder="e.g., firstname.lastname">
                                 <span class="input-group-text">@deped.gov.ph</span>
                             </div>

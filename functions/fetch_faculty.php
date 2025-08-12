@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 try {
     // Query to fetch faculty data
     $stmt = $pdo->prepare("
-        SELECT id_no, deped_id_no, last_name, first_name, middle_name, status, email 
+        SELECT id_no, deped_id_no, last_name, first_name, middle_name, status, email, photo 
         FROM user_data 
         WHERE role = 'faculty'
         ORDER BY last_name ASC

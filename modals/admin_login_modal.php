@@ -13,9 +13,9 @@
                     <!-- DepEd ID No. -->
                     <div class="mb-3">
                         <label for="idNo" class="form-label fw-semibold">DepEd ID No.</label>
-                        <input type="text" class="form-control" id="idNo" name="deped_id_no" placeholder="123456" required pattern="^\d{6}$" minlength="6" maxlength="6" autocomplete="off">
+                        <input type="text" class="form-control" id="idNo" name="deped_id_no" placeholder="1234567" required pattern="^\d{7}$" minlength="7" maxlength="7" autocomplete="off">
                         <div class="invalid-feedback">
-                            DepEd ID must be exactly 6 digits (e.g., 123456).
+                            DepEd ID must be exactly 7 digits (e.g., 1234567).
                         </div>
                     </div>
                     <!-- Email -->

@@ -31,8 +31,8 @@ include '../includes/sidebar.php';
         <thead>
             <tr>
                 <th>#</th>
-                <th>Name</th>
-                <th>Filename</th>
+                <th>User Label</th>
+                <th>Actual Filename</th>
                 <th>Version</th>
                 <th>Date/Time</th>
                 <th>File Size</th>
@@ -48,11 +48,63 @@ include '../includes/sidebar.php';
 
 <?php include '../includes/footer.php'; ?>
 
+<style>
+/* Mobile responsive styles for DataTable */
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        text-align: left;
+        margin-bottom: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    /* Make buttons smaller on mobile */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Ensure table doesn't overflow */
+    .dataTables_wrapper {
+        overflow-x: auto;
+    }
+    
+    /* Hide responsive controls on desktop */
+    @media (min-width: 769px) {
+        .dtr-control {
+            display: none !important;
+        }
+    }
+}
+
+/* Improve modal display on mobile */
+.dtr-modal {
+    max-width: 95vw;
+    margin: 10px auto;
+}
+
+.dtr-modal .dtr-modal-content {
+    padding: 15px;
+}
+
+.dtr-modal .dtr-modal-close {
+    top: 10px;
+    right: 15px;
+}
+</style>
+
 
 <!-- Include DataTable Scripts -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 
 <script>
@@ -83,6 +135,22 @@ include '../includes/sidebar.php';
     }
 
     const table = $('#adminFilesTable').DataTable({
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.modal({
+                    header: function (row) {
+                        var data = row.data();
+                        return 'Details for ' + data.name;
+                    }
+                }),
+                renderer: $.fn.dataTable.Responsive.renderer.tableAll()
+            },
+            breakpoints: [
+                { name: 'desktop', width: Infinity },
+                { name: 'tablet', width: 1024 },
+                { name: 'phone', width: 480 }
+            ]
+        },
         ajax: {
             url: '../functions/fetchPendingFiles.php',
             dataSrc: '',
@@ -98,8 +166,20 @@ include '../includes/sidebar.php';
                 return meta.row + 1; // Incremental counter
             }
         },
-            { data: 'name' },
-            { data: 'filename' },
+            { 
+                data: 'filename',
+                render: function (data, type, row) {
+                    // Show the actual filename with extension
+                    return data || 'N/A';
+                }
+            },
+            { 
+                data: 'name',
+                render: function (data, type, row) {
+                    // Show the user-friendly label
+                    return data || 'N/A';
+                }
+            },
             { data: 'version_no' },
              { 
                 data: 'datetime',
@@ -156,6 +236,14 @@ include '../includes/sidebar.php';
                     `;
                 }
             }
+        ],
+        columnDefs: [
+            { orderable: false, targets: [0, 6] }, // Counter, Action
+            { searchable: false, targets: [0, 6] },
+            { responsivePriority: 1, targets: [1, 2, 6] }, // Actual Filename, User Label, Actions
+            { responsivePriority: 2, targets: [4] }, // Date/Time
+            { responsivePriority: 3, targets: [3, 5] }, // Version, File Size
+            { className: "text-center", targets: [0, 6] }
         ]
     });
 

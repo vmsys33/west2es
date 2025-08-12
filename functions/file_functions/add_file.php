@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($fileSizeInBytes < 1024 * 1024) {
             $fileSize = round($fileSizeInBytes / 1024, 2) . ' KB';
         } else {
-            $fileSize = round($fi8leSizeInBytes / (1024 * 1024), 2) . ' MB';
+            $fileSize = round($fileSizeInBytes / (1024 * 1024), 2) . ' MB';
         }
 
         

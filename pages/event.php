@@ -24,25 +24,38 @@ $pageTitle = getPageTitle($currentPage);
 
 <div class="col-md-9 main-content">
     <h3 class="mb-3">Event Management</h3>
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addEventModal">Add Event</button>
-
-    
-  
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">Add Event</button>
+        
+        <!-- Delete Selected Events Button - Admin Only -->
+        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+        <button class="btn btn-danger" id="deleteSelectedEventsBtn" disabled>
+            <i class="fas fa-trash-alt me-2"></i>Delete Selected Events
+        </button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllEventsModal">
+            <i class="fas fa-trash-alt me-2"></i>Delete All Events
+        </button>
+        <?php endif; ?>
+    </div>
 
     <h4 class="mb-3">List of Events</h4>
     <div class="table-responsive">
         <table id="eventsTable" class="table table-bordered">
             <colgroup>
+        <col width="5%"> <!-- Checkbox -->
         <col width="5%"> <!-- No. -->
-        <col width="15%"> <!-- Filename -->
+        <col width="15%"> <!-- Name -->
+        <col width="20%"> <!-- Description -->
+        <col width="15%"> <!-- Location -->
         <col width="15%"> <!-- Date & Time -->
-        <col width="10%"> <!-- Uploader -->
-        <col width="10%"> <!-- Actions -->
         <col width="15%"> <!-- Actions -->
             </colgroup>
             <thead>
                 <tr>
-                    <th>Id No</th>
+                    <th>
+                        <input type="checkbox" id="selectAllEvents" class="form-check-input">
+                    </th>
+                    <th>No.</th>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Location</th>
@@ -136,9 +149,72 @@ $pageTitle = getPageTitle($currentPage);
     </div>
 </div>
 
+<!-- Delete Selected Events Modal -->
+<div class="modal fade" id="deleteSelectedEventsModal" tabindex="-1" aria-labelledby="deleteSelectedEventsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteSelectedEventsModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Selected Events
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Warning!</h6>
+                    <p class="mb-0">This action will permanently delete the selected events from the database. This action cannot be undone!</p>
+                </div>
+                
+                <div id="selectedEventsList">
+                    <!-- Selected events will be listed here -->
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteSelectedEvents">
+                        <i class="fas fa-trash-alt me-2"></i>Delete Selected Events
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Delete All Events Modal -->
+<div class="modal fade" id="deleteAllEventsModal" tabindex="-1" aria-labelledby="deleteAllEventsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAllEventsModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete All Events
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Warning!</h6>
+                    <p class="mb-0">This action will permanently delete ALL events from the database. This action cannot be undone!</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="deleteAllConfirmation" class="form-label">Confirmation Code</label>
+                    <input type="text" class="form-control" id="deleteAllConfirmation" 
+                           placeholder="Type: DELETE_ALL_EVENTS_CONFIRM" required>
+                    <div class="form-text">Type exactly: <code>DELETE_ALL_EVENTS_CONFIRM</code></div>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteAllEvents" disabled>
+                        <i class="fas fa-trash-alt me-2"></i>Delete All Events
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <?php include '../includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>
 
 
   
@@ -191,6 +267,7 @@ $pageTitle = getPageTitle($currentPage);
                         }
 
                         eventsTableInstance.row.add([
+                            `<input type="checkbox" class="form-check-input event-checkbox" data-id="${event.id}">`,
                             counter, 
                             event.name,
                             event.description,
@@ -293,7 +370,342 @@ $pageTitle = getPageTitle($currentPage);
 
     // Initial load
     loadEvents(); // Initial load
+    
+    // Handle select all checkbox
+    const selectAllCheckbox = document.getElementById('selectAllEvents');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.event-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateDeleteSelectedButton();
+        });
+    }
+    
+    // Handle individual checkboxes
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('event-checkbox')) {
+            updateSelectAllCheckbox();
+            updateDeleteSelectedButton();
+        }
+    });
+    
+    // Delete Selected Events functionality
+    const deleteSelectedEventsBtn = document.getElementById('deleteSelectedEventsBtn');
+    if (deleteSelectedEventsBtn) {
+        deleteSelectedEventsBtn.addEventListener('click', function() {
+            showDeleteSelectedModal();
+        });
+    }
+    
+    // Delete Selected Events confirmation
+    const confirmDeleteSelectedEvents = document.getElementById('confirmDeleteSelectedEvents');
+    if (confirmDeleteSelectedEvents) {
+        confirmDeleteSelectedEvents.addEventListener('click', function() {
+            deleteSelectedEvents();
+        });
+    }
+    
+    // Delete All Events functionality
+    const deleteAllConfirmation = document.getElementById('deleteAllConfirmation');
+    const confirmDeleteAllEvents = document.getElementById('confirmDeleteAllEvents');
+    
+    if (deleteAllConfirmation && confirmDeleteAllEvents) {
+        deleteAllConfirmation.addEventListener('input', function() {
+            confirmDeleteAllEvents.disabled = this.value !== 'DELETE_ALL_EVENTS_CONFIRM';
+        });
+        
+        confirmDeleteAllEvents.addEventListener('click', function() {
+            deleteAllEvents();
+        });
+    }
 });
+
+// Helper functions for checkbox management
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('selectAllEvents');
+    const checkboxes = document.querySelectorAll('.event-checkbox');
+    const checkedBoxes = document.querySelectorAll('.event-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedBoxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+function updateDeleteSelectedButton() {
+    const deleteSelectedBtn = document.getElementById('deleteSelectedEventsBtn');
+    const checkedBoxes = document.querySelectorAll('.event-checkbox:checked');
+    
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.disabled = checkedBoxes.length === 0;
+        if (checkedBoxes.length > 0) {
+            deleteSelectedBtn.innerHTML = `<i class="fas fa-trash-alt me-2"></i>Delete Selected Events (${checkedBoxes.length})`;
+        } else {
+            deleteSelectedBtn.innerHTML = `<i class="fas fa-trash-alt me-2"></i>Delete Selected Events`;
+        }
+    }
+}
+
+function getSelectedEventIds() {
+    const checkedBoxes = document.querySelectorAll('.event-checkbox:checked');
+    return Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
+}
+
+function showDeleteSelectedModal() {
+    const selectedIds = getSelectedEventIds();
+    if (selectedIds.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Events Selected',
+            text: 'Please select at least one event to delete.'
+        });
+        return;
+    }
+    
+    // Get event details for display
+    const selectedEventsList = document.getElementById('selectedEventsList');
+    let eventsHtml = '<div class="mb-3"><strong>Selected Events:</strong></div><ul class="list-group">';
+    
+    selectedIds.forEach(id => {
+        // Find the event row and get details
+        const checkbox = document.querySelector(`.event-checkbox[data-id="${id}"]`);
+        if (checkbox) {
+            const row = checkbox.closest('tr');
+            const cells = row.cells;
+            const eventName = cells[2].textContent; // Name column
+            const eventLocation = cells[4].textContent; // Location column
+            const eventDateTime = cells[5].textContent; // DateTime column
+            
+            eventsHtml += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${eventName}</strong><br>
+                        <small class="text-muted">${eventLocation} - ${eventDateTime}</small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">ID: ${id}</span>
+                </li>
+            `;
+        }
+    });
+    
+    eventsHtml += '</ul>';
+    selectedEventsList.innerHTML = eventsHtml;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteSelectedEventsModal'));
+    modal.show();
+}
+
+// Delete Selected Events function
+function deleteSelectedEvents() {
+    const selectedIds = getSelectedEventIds();
+    
+    if (selectedIds.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Events Selected',
+            text: 'Please select at least one event to delete.'
+        });
+        return;
+    }
+    
+    // Final confirmation with SweetAlert
+    Swal.fire({
+        icon: 'warning',
+        title: 'Are you absolutely sure?',
+        html: `
+            <div class="text-start">
+                <p><strong>This action will permanently delete ${selectedIds.length} selected event(s):</strong></p>
+                <ul class="text-start">
+                    <li>Selected events will be removed from the database</li>
+                    <li>This action cannot be undone</li>
+                </ul>
+                <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: `Yes, delete ${selectedIds.length} event(s)!`,
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performDeleteSelectedEvents(selectedIds);
+        }
+    });
+}
+
+function performDeleteSelectedEvents(selectedIds) {
+    // Show loading state
+    Swal.fire({
+        title: 'Deleting Selected Events...',
+        html: 'This may take a few moments. Please do not close this window.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('event_ids', JSON.stringify(selectedIds));
+    
+    // Send request
+    fetch('../functions/delete_selected_events.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Events Deleted Successfully!',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Summary:</strong></p>
+                        <ul class="text-start">
+                            <li>Events deleted: ${data.deleted_count}</li>
+                        </ul>
+                    </div>
+                `,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Close modal and reload page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteSelectedEventsModal'));
+                modal.hide();
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while deleting events. Please try again.'
+        });
+    });
+}
+
+// Delete All Events function
+function deleteAllEvents() {
+    const confirmationCode = document.getElementById('deleteAllConfirmation').value;
+    
+    if (confirmationCode !== 'DELETE_ALL_EVENTS_CONFIRM') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Confirmation',
+            text: 'Please type the confirmation code correctly.'
+        });
+        return;
+    }
+    
+    // Final confirmation with SweetAlert
+    Swal.fire({
+        icon: 'warning',
+        title: 'Are you absolutely sure?',
+        html: `
+            <div class="text-start">
+                <p><strong>This action will permanently delete:</strong></p>
+                <ul class="text-start">
+                    <li>ALL events from the database</li>
+                    <li>All event records and data</li>
+                </ul>
+                <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete all events!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performDeleteAllEvents();
+        }
+    });
+}
+
+function performDeleteAllEvents() {
+    const confirmationCode = document.getElementById('deleteAllConfirmation').value;
+    
+    // Show loading state
+    Swal.fire({
+        title: 'Deleting All Events...',
+        html: 'This may take a few moments. Please do not close this window.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('confirmation', confirmationCode);
+    
+    // Send request
+    fetch('../functions/delete_all_events.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'All Events Deleted Successfully!',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Summary:</strong></p>
+                        <ul class="text-start">
+                            <li>Events deleted: ${data.deleted_count}</li>
+                        </ul>
+                    </div>
+                `,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Close modal and reload page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteAllEventsModal'));
+                modal.hide();
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while deleting events. Please try again.'
+        });
+    });
+}
 
 </script>
 

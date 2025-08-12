@@ -41,6 +41,8 @@ function getPageTitle($currentPage) {
         case "t_rs_files":
         return "Transparency/Realignment and Supplementals";
 
+        case 'approved_proposal':
+            return 'Approved Proposal';
                 
         case "dashboard-overview":
             return "Dashboard Overview";

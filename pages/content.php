@@ -17,7 +17,8 @@ $allowedPages = [
     'admin_files', 'aeld_files', 'cild_files', 'if_completed_files', 
     'if_proposals_files', 'lulr_files', 'rp_completed_berf_files', 
     'rp_completed_nonberf_files', 'rp_proposal_berf_files', 
-    'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files'
+    'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files',
+    'approved_proposal'
 ];
 
 // Check if current_page is provided via GET parameter
@@ -55,7 +56,8 @@ $allowedTables = [
     'admin_files', 'aeld_files', 'cild_files', 'if_completed_files', 
     'if_proposals_files', 'lulr_files', 'rp_completed_berf_files', 
     'rp_completed_nonberf_files', 'rp_proposal_berf_files', 
-    'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files'
+    'rp_proposal_nonberf_files', 't_lr_files', 't_pp_files', 't_rs_files',
+    'approved_proposal'
 ];
 
 if (!in_array($currentPage, $allowedTables)) {
@@ -94,7 +96,7 @@ try {
             user_data ud 
             ON af.user_id = ud.id_no
         WHERE 
-            af.status = 'approve'
+            1=1 -- Show all approved files (status is handled in pending_files table)
         GROUP BY 
             af.id, af.filename, af.user_id, ud.first_name, ud.last_name
     ");
@@ -149,52 +151,54 @@ try {
 
 <h4 class="mb-3">List of Files</h4>
     <div class="table-responsive">
-   <table id="filesTable" class="table table-bordered">
+   <table id="filesTable" class="table table-bordered table-striped table-hover">
     <colgroup>
         <col width="5%"> <!-- No. -->
-        <col width="20%"> <!-- Filename -->
+        <col width="25%"> <!-- Filename -->
         <col width="20%"> <!-- Date & Time -->
-        <col width="10%"> <!-- Uploader -->
-        <col width="15%"> <!-- Actions -->
+        <col width="15%"> <!-- Uploader -->
+        <col width="35%"> <!-- Actions -->
     </colgroup>
     <thead>
         <tr>
-            <th>#</th> <!-- Number -->
+            <th class="text-center">#</th> <!-- Number -->
             <th>Name</th>
             <!-- <th>Latest Version</th> -->
-            <th>Date & Time</th>
-            <th>Uploader</th>
-            <th>Action</th>
+            <th class="text-center">Date & Time</th>
+            <th class="text-center">Uploader</th>
+            <th class="text-center">Action</th>
         </tr>
     </thead>
     <tbody>
         <?php $counter = 1; ?>
         <?php foreach ($files as $file): ?>
             <tr>
-                <td><?= $counter++ ?></td> <!-- Numbering flag -->
+                <td class="text-center"><?= $counter++ ?></td> <!-- Numbering flag -->
                 <td><?= htmlspecialchars($file['filename']) ?></td>
-                <td><?= htmlspecialchars(date('F j, Y, h:i A', strtotime($file['datetime']))) ?></td>
-                <td><?= htmlspecialchars($file['first_name']) ?></td>
-                <td>
-                    <button class="btn btn-info btn-sm preview-file" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-table="<?= $table2?>" data-bs-toggle="modal" data-bs-target="#previewFileModal" title="Preview file revisions">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-success btn-sm edit-file" data-id="<?= $file['id'] ?>" data-table="<?= $table2?>" data-version="<?= $file['version_no'] ?>" data-name="<?= $file['filename'] ?>" data-bs-toggle="modal" data-bs-target="#editFileModal" title="Edit file content/revisions">
-                        <i class="fas fa-file-alt"></i>
-                    </button>
-                    <!-- Edit filename button -->
-                    <button class="btn btn-warning btn-sm edit-filename" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-table1="<?= $table1 ?>" data-table2="<?= $table2 ?>" data-bs-toggle="modal" data-bs-target="#editFilenameModal" title="Edit filename">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <!-- Add button for file revision -->
-                    <button class="btn btn-primary btn-sm add-revision" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-bs-toggle="modal" data-bs-target="#addFileRevisionModal" title="Add new revision">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <?php if ($_SESSION['user_role'] !== 'faculty'): ?>
-                    <button class="btn btn-danger btn-sm delete-file" data-id="<?= $file['id'] ?>" data-table1="<?= $table1 ?>" data-table2="<?= $table2 ?>" data-version="<?= $file['version_no'] ?>" data-name="<?= $file['filename'] ?>" title="Delete file and all revisions">
-                            <i class="fas fa-trash"></i>
+                <td class="text-center"><?= htmlspecialchars(date('F j, Y', strtotime($file['datetime']))) ?></td>
+                <td class="text-center"><?= htmlspecialchars($file['first_name']) ?></td>
+                <td class="text-center">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-info btn-sm preview-file" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-table="<?= $table2?>" data-bs-toggle="modal" data-bs-target="#previewFileModal" title="Preview file revisions">
+                            <i class="fas fa-eye"></i>
                         </button>
-                    <?php endif; ?>
+                        <button class="btn btn-success btn-sm edit-file" data-id="<?= $file['id'] ?>" data-table="<?= $table2?>" data-version="<?= $file['version_no'] ?>" data-name="<?= $file['filename'] ?>" data-bs-toggle="modal" data-bs-target="#editFileModal" title="Edit file content/revisions">
+                            <i class="fas fa-file-alt"></i>
+                        </button>
+                        <!-- Edit filename button -->
+                        <button class="btn btn-warning btn-sm edit-filename" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-table1="<?= $table1 ?>" data-table2="<?= $table2 ?>" data-bs-toggle="modal" data-bs-target="#editFilenameModal" title="Edit filename">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <!-- Add button for file revision -->
+                        <button class="btn btn-primary btn-sm add-revision" data-id="<?= $file['id'] ?>" data-name="<?= $file['filename'] ?>" data-bs-toggle="modal" data-bs-target="#addFileRevisionModal" title="Add new revision">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <?php if ($_SESSION['user_role'] !== 'faculty'): ?>
+                        <button class="btn btn-danger btn-sm delete-file" data-id="<?= $file['id'] ?>" data-table1="<?= $table1 ?>" data-table2="<?= $table2 ?>" data-version="<?= $file['version_no'] ?>" data-name="<?= $file['filename'] ?>" title="Delete file and all revisions">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        <?php endif; ?>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -445,9 +449,9 @@ try {
                     <input type="hidden" id="editFilenameTable2" name="table2">
                     
                     <div class="mb-3">
-                        <label for="editFilenameInput" class="form-label fw-bold">Current Filename</label>
-                        <input type="text" class="form-control" id="editFilenameInput" name="new_filename" required>
-                        <small class="text-muted">Enter the new filename (without file extension)</small>
+                        <label for="editFilenameInput" class="form-label fw-bold">Current Label</label>
+                        <input type="text" class="form-control" id="editFilenameInput" name="filename" required>
+                        <small class="text-muted">Enter the new label (this is not a filename or file)</small>
                     </div>
                     
                     <div class="text-end">
@@ -481,29 +485,66 @@ try {
     </div>
 </div>
 
+<!-- Rename Revision Modal -->
+<div class="modal fade" id="renameRevisionModal" tabindex="-1" aria-labelledby="renameRevisionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="renameRevisionModalLabel">
+                    <i class="fas fa-tag me-2"></i> Rename Revision File
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="renameRevisionForm">
+                    <input type="hidden" id="renameRevisionId" name="revision_id">
+                    <input type="hidden" id="renameRevisionTable1" name="table1">
+                    <input type="hidden" id="renameRevisionTable2" name="table2">
+
+                    <div class="mb-3">
+                        <label for="renameRevisionInput" class="form-label fw-bold">New Filename (without extension)</label>
+                        <input type="text" class="form-control" id="renameRevisionInput" name="new_filename" required>
+                        <small class="text-muted">Enter the new filename. The extension will be preserved.</small>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Rename
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
   <?php include '../includes/footer.php'; ?>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+<!-- Add SweetAlert2 script (latest stable version) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
   function formatDateTime(datetime) {
     try {
       const date = new Date(datetime); // Convert string to a Date object
 
-      // Format the date to "Month Day, Year Hour:Minute AM/PM"
+      // Format the date to "Month Day, Year" (date only, no time)
       const options = { 
         month: 'long', 
         day: 'numeric', 
-        year: 'numeric', 
-        hour: 'numeric', 
-        minute: 'numeric', 
-        hour12: true // Use 12-hour clock
+        year: 'numeric'
       };
       
-      return date.toLocaleString('en-US', options);
+      return date.toLocaleDateString('en-US', options);
     } catch (error) {
       console.error('Error formatting datetime:', error);
       return datetime; // Return original value if formatting fails
@@ -520,7 +561,68 @@ try {
     $(document).ready(function () {
     // Check if the DataTable is already initialized
         $('#filesTable').DataTable({
-            responsive: true  // Enable responsiveness
+            responsive: {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function (row) {
+                            var data = row.data();
+                            return 'Details for ' + data[1]; // Filename column
+                        }
+                    }),
+                    renderer: $.fn.dataTable.Responsive.renderer.tableAll()
+                },
+                breakpoints: [
+                    { name: 'desktop', width: Infinity },
+                    { name: 'tablet', width: 1024 },
+                    { name: 'phone', width: 480 }
+                ]
+            },
+            columnDefs: [
+                {
+                    targets: 0, // Number column
+                    responsivePriority: 1,
+                    className: 'text-center'
+                },
+                {
+                    targets: 1, // Filename column
+                    responsivePriority: 2
+                },
+                {
+                    targets: 2, // Date & Time column
+                    responsivePriority: 3,
+                    className: 'text-center'
+                },
+                {
+                    targets: 3, // Uploader column
+                    responsivePriority: 4,
+                    className: 'text-center'
+                },
+                {
+                    targets: 4, // Actions column
+                    responsivePriority: 5,
+                    className: 'text-center',
+                    orderable: false
+                }
+            ],
+            language: {
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                var data = row.data();
+                                return 'Details for ' + data[1];
+                            }
+                        }),
+                        renderer: $.fn.dataTable.Responsive.renderer.tableAll()
+                    }
+                }
+            },
+            pageLength: 10,
+            lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+            order: [[2, 'desc']], // Sort by date descending
+            autoWidth: false,
+            scrollX: true,
+            scrollCollapse: true
         });
     });
 
@@ -581,7 +683,7 @@ try {
                                 <td>${revision.file_size}</td>
                                 <td>
 
-                                    <a href="${revision.file_path}" class="btn btn-sm btn-primary" download-file2 title="Download this revision"><i class="fas fa-download"></i>
+                                    <a href="#" class="btn btn-sm btn-primary download-file2" data-url="${revision.file_path}" title="Download this revision"><i class="fas fa-download"></i>
                                     </a>
                                     ${viewerButton} <!-- Dynamically generated viewer button -->
                                 </td>
@@ -675,7 +777,7 @@ try {
                 // Show the modal
                 $('#editFileModal').modal('show');
             } else {
-                Swal.fire('Error', response.message, 'error');
+                alert('Error: ' + response.message);
             }
         }, 'json');
     });
@@ -701,100 +803,67 @@ try {
 
     // Add click event listeners for the Rename Revision buttons
     function addRenameButtonListeners() {
-        console.log('Setting up rename button listeners...');
         $('.rename-revision').off('click').on('click', function () {
-            console.log('Rename button clicked!');
             const revisionId = $(this).data('id');
             const currentFilename = $(this).data('filename');
             const table1 = $(this).data('table1');
             const table2 = $(this).data('table2');
 
-            console.log('Rename button data:', {
-                revisionId: revisionId,
-                currentFilename: currentFilename,
-                table1: table1,
-                table2: table2
-            });
-
             // Extract filename without extension for better UX
             const filenameWithoutExtension = currentFilename.replace(/\.[^/.]+$/, "");
-            
-            // Show input dialog using SweetAlert
-            Swal.fire({
-                title: 'Rename Revision File',
-                text: 'Enter the new filename (extension will be preserved):',
-                input: 'text',
-                inputValue: filenameWithoutExtension,
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocorrect: 'off',
-                    autocorrect: 'off',
-                    spellcheck: 'false'
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Rename',
-                cancelButtonText: 'Cancel',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'You need to enter a filename!';
-                    }
-                    // Allow users to enter filename with or without extension
-                    // The backend will handle extension logic
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const newFilename = result.value;
-                    
-                    // Show loading state
-                    Swal.fire({
-                        title: 'Renaming...',
-                        text: 'Please wait while we rename the file.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
 
-                    // Send rename request
-                    console.log('Sending rename request:', {
-                        revision_id: revisionId,
-                        new_filename: newFilename,
-                        table1: table1,
-                        table2: table2
-                    });
-                    console.log('Revision ID type:', typeof revisionId, 'Value:', revisionId);
-                    console.log('Table1:', table1, 'Table2:', table2);
-                    
-                    $.ajax({
-                        url: '../functions/file_functions/rename_revision_file.php',
-                        type: 'POST',
-                        data: {
-                            revision_id: revisionId,
-                            new_filename: newFilename,
-                            table1: table1,
-                            table2: table2
-                        },
-                        success: function(response) {
-                            console.log('Rename response:', response);
-                            if (response.status === 'success') {
-                                Swal.fire('Success!', response.message, 'success').then(() => {
-                                    // Refresh the revisions table instead of reloading the page
-                                    refreshRevisionsTable();
-                                });
-                            } else {
-                                Swal.fire('Error!', response.message || 'Error renaming file. Please try again.', 'error');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.log('Rename error:', xhr.responseText);
-                            Swal.fire('Error!', 'An error occurred while trying to rename the file.', 'error');
-                        }
-                    });
-                }
-            });
+            // Set modal fields
+            $('#renameRevisionId').val(revisionId);
+            $('#renameRevisionTable1').val(table1);
+            $('#renameRevisionTable2').val(table2);
+            $('#renameRevisionInput').val(filenameWithoutExtension);
+
+            // Show the Bootstrap modal
+            $('#renameRevisionModal').modal('show');
         });
-        console.log('Rename button listeners set up. Found ' + $('.rename-revision').length + ' rename buttons.');
     }
+
+    // Handle rename revision form submission
+    $('#renameRevisionForm').on('submit', function (e) {
+        e.preventDefault();
+        const revisionId = $('#renameRevisionId').val();
+        const table1 = $('#renameRevisionTable1').val();
+        const table2 = $('#renameRevisionTable2').val();
+        const newFilename = $('#renameRevisionInput').val();
+
+        // Optionally, add validation here
+        if (!newFilename) {
+            alert('You need to enter a filename!');
+            return;
+        }
+
+        // Send AJAX request
+        // Get the file_id from the modal's data attribute
+        const fileId = $('#editFileModal').data('file-id');
+        $.ajax({
+            url: '../functions/file_functions/rename_revision_file.php', // Correct backend endpoint
+            type: 'POST',
+            data: {
+                revision_id: revisionId,
+                new_filename: newFilename,
+                table1: table1,
+                table2: table2,
+                file_id: fileId // Pass file_id to backend
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    $('#renameRevisionModal').modal('hide');
+                    refreshRevisionsTable();
+                } else {
+                    Swal.fire('Error!', response.message || 'Error renaming file. Please try again.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('AJAX error:', xhr.responseText);
+                Swal.fire('Error!', 'An error occurred while trying to rename the file. Details: ' + xhr.responseText, 'error');
+            }
+        });
+    });
 
     // Function to refresh the revisions table
     function refreshRevisionsTable() {
@@ -863,7 +932,7 @@ try {
                                 <td>${formatDateTime(revision.datetime)}</td>
                                 <td>${revision.file_size}</td>
                                 <td>
-                                    <a href="${revision.file_path}" class="btn btn-sm btn-primary" download-file2 title="Download this revision">
+                                    <a href="#" class="btn btn-sm btn-primary download-file2" data-url="${revision.file_path}" title="Download this revision">
                                         <i class="fas fa-download"></i>
                                     </a>
                                     ${viewerButton}
@@ -920,17 +989,18 @@ try {
             contentType: false, // Required for file uploads
             success: function (response) {
                 if (response.status === 'success') {
-                    Swal.fire('Success', response.message, 'success').then(() => {
-                        $('#editRevisionModal').modal('hide'); // Close the Edit Revision Modal
-                        $('#editFileModal').modal('hide'); // Close the Edit File Modal
-                        location.reload(); // Reload the page to reflect changes
-                    });
+                    // Close the Edit Revision Modal
+                    $('#editRevisionModal').modal('hide');
+                    // Close the Edit File Modal
+                    $('#editFileModal').modal('hide');
+                    // Reload the page to reflect changes
+                    location.reload();
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    alert(response.message || 'Error updating the revision. Please try again.');
                 }
             },
             error: function () {
-                Swal.fire('Error', 'An error occurred while updating the revision.', 'error');
+                alert('An error occurred while updating the revision.');
             }
         });
     });
@@ -1052,16 +1122,16 @@ try {
             contentType: false, // Required for file uploads
             success: function (response) {
                 if (response.status === 'success') {
-                    Swal.fire('Success', response.message, 'success').then(() => {
-                        $('#addRevisionModal').modal('hide'); // Close the Add Revision Modal
-                        location.reload(); // Reload the page to reflect changes
-                    });
+                    // Close the Add Revision Modal
+                    $('#addFileRevisionModal').modal('hide');
+                    // Reload the page to reflect changes
+                    location.reload();
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    alert(response.message || 'Error adding the revision. Please try again.');
                 }
             },
             error: function () {
-                Swal.fire('Error', 'An error occurred while adding the revision.', 'error');
+                alert('An error occurred while adding the revision.');
             },
             complete: function () {
                 // Re-enable the button once the AJAX request is complete
@@ -1141,26 +1211,21 @@ $('.add-revision').on('click', function () {
 // Edit filename functionality
 $(document).on('click', '.edit-filename', function () {
     const fileId = $(this).data('id');
-    const fileName = $(this).data('name');
+    const label = $(this).data('name'); // This is the label, not the real filename
     const table1 = $(this).data('table1');
     const table2 = $(this).data('table2');
-    
-    // Extract filename without extension
-    const filenameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
-    
-    // Populate modal fields
+    // Ensure the input is enabled and not readonly
+    $('#editFilenameInput').prop('disabled', false).prop('readonly', false);
     $('#editFilenameId').val(fileId);
     $('#editFilenameTable1').val(table1);
     $('#editFilenameTable2').val(table2);
-    $('#editFilenameInput').val(filenameWithoutExtension);
+    $('#editFilenameInput').val(label);
 });
 
-// Handle edit filename form submission
+// Handle edit label form submission
 $('#editFilenameForm').on('submit', function (e) {
     e.preventDefault();
-    
     const formData = new FormData(this);
-    
     $.ajax({
         url: '../functions/file_functions/edit_filename.php',
         method: 'POST',
@@ -1178,7 +1243,7 @@ $('#editFilenameForm').on('submit', function (e) {
             }
         },
         error: function () {
-            Swal.fire('Error!', 'An unexpected error occurred while updating the filename.', 'error');
+            Swal.fire('Error!', 'An unexpected error occurred while updating the label.', 'error');
         }
     });
 });
@@ -1220,3 +1285,129 @@ $(document).on('click', '.download-file', function () {
 });
 
 </script>
+
+<style>
+/* Custom responsive styles for DataTable */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#filesTable {
+    width: 100% !important;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    #filesTable {
+        font-size: 14px;
+    }
+    
+    #filesTable .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 12px;
+        margin: 1px;
+    }
+    
+    #filesTable td {
+        padding: 0.5rem 0.25rem;
+        vertical-align: middle;
+    }
+    
+    #filesTable th {
+        padding: 0.5rem 0.25rem;
+        font-size: 13px;
+    }
+    
+    /* Ensure action buttons don't wrap */
+    #filesTable .btn-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 2px;
+    }
+    
+    #filesTable .btn-group .btn {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    #filesTable {
+        font-size: 12px;
+    }
+    
+    #filesTable .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 11px;
+    }
+    
+    #filesTable td, #filesTable th {
+        padding: 0.3rem 0.2rem;
+    }
+    
+    /* Hide less important columns on very small screens */
+    #filesTable .dtr-hidden {
+        display: none !important;
+    }
+}
+
+/* DataTables responsive modal styles */
+.dtr-modal {
+    z-index: 1050;
+}
+
+.dtr-modal .dtr-modal-content {
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+/* Ensure proper spacing in responsive details */
+.dtr-details {
+    margin: 0;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
+
+.dtr-details li {
+    margin-bottom: 0.25rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dtr-details li:last-child {
+    border-bottom: none;
+}
+
+/* Fix for action buttons in responsive view */
+.dtr-details .btn {
+    margin: 2px;
+    display: inline-block;
+}
+
+/* Ensure table doesn't break layout */
+.dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Custom scrollbar for better mobile experience */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>

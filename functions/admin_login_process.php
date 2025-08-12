@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
+    // Validate deped_id_no format (exactly 7 digits)
+    if (!preg_match('/^\d{7}$/', $deped_id_no)) {
+        echo json_encode(['status' => 'error', 'message' => 'DepEd ID No. must be exactly 7 digits.']);
+        exit;
+    }
+
     try {
         // Query the database for the admin account
         $stmt = $pdo->prepare("SELECT * FROM user_data WHERE deped_id_no = :deped_id_no AND email = :email");
@@ -35,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['last_name'] = $user['last_name'];
 
                     // Fetch general settings from the database
-                    $settings_stmt = $pdo->prepare("SELECT * FROM general_setting LIMIT 1");
+                    $settings_stmt = $pdo->prepare("SELECT website_name, email_address, school_logo, admin_name FROM general_setting WHERE id = 1");
                     $settings_stmt->execute();
                     $settings = $settings_stmt->fetch(PDO::FETCH_ASSOC);
 

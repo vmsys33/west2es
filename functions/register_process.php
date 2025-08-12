@@ -117,8 +117,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
-        // Send success response
-        echo json_encode(['status' => 'success', 'message' => 'Your account has been created successfully.']);
+        // Send verification email
+        require_once 'EmailVerificationManager.php';
+        $verificationManager = new EmailVerificationManager($email);
+        $verificationResult = $verificationManager->processVerificationRequest();
+        
+        if ($verificationResult['status'] === 'success') {
+            echo json_encode([
+                'status' => 'success', 
+                'message' => 'Your account has been created successfully. Please check your email to verify your account before it can be approved by an administrator.'
+            ]);
+        } else {
+            // Account created but email verification failed
+            echo json_encode([
+                'status' => 'warning', 
+                'message' => 'Your account has been created successfully, but there was an issue sending the verification email. Please contact the administrator.'
+            ]);
+        }
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => 'An error occurred while saving your data. PDO: ' . $e->getMessage()]);
     }
